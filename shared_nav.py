@@ -1,8 +1,9 @@
 import streamlit as st
+from textwrap import dedent
 
 
 def inject_base_css():
-    st.markdown("""
+    st.markdown(dedent("""
     <style>
     #MainMenu { visibility: hidden; }
     header { visibility: hidden; }
@@ -186,46 +187,40 @@ def inject_base_css():
         }
     }
     </style>
-    """, unsafe_allow_html=True)
+    """), unsafe_allow_html=True)
 
 
 def render_nav(active: str):
     inject_base_css()
 
-    active_map = {
-        "Explore": "/",
-        "About": "/About",
-        "Team": "/Team",
-        "Publications": "/Publications",
-    }
+    html = f"""
+<script>
+function smilxNav(path) {{
+    const w = window.top || window;
+    const origin = w.location.origin;
+    w.location.href = origin + path;
+}}
+</script>
 
-    st.markdown(f"""
-    <script>
-    function smilxNav(path) {{
-        const w = window.top || window;
-        const origin = w.location.origin;
-        w.location.href = origin + path;
-    }}
-    </script>
+<div class="nav-wrap">
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="brand">SmilX</div>
 
-    <div class="nav-wrap">
-        <div class="navbar">
-            <div class="navbar-inner">
-                <div class="brand">SmilX</div>
+            <div class="nav-links">
+                <a href="javascript:void(0)" onclick="smilxNav('/')" class="{'active' if active == 'Explore' else ''}">Explore</a>
+                <a href="javascript:void(0)" onclick="smilxNav('/About')" class="{'active' if active == 'About' else ''}">About</a>
+                <a href="javascript:void(0)" onclick="smilxNav('/Team')" class="{'active' if active == 'Team' else ''}">Team</a>
+                <a href="javascript:void(0)" onclick="smilxNav('/Publications')" class="{'active' if active == 'Publications' else ''}">Publications</a>
+            </div>
 
-                <div class="nav-links">
-                    <a href="javascript:void(0)" onclick="smilxNav('/')" class="{'active' if active == 'Explore' else ''}">Explore</a>
-                    <a href="javascript:void(0)" onclick="smilxNav('/About')" class="{'active' if active == 'About' else ''}">About</a>
-                    <a href="javascript:void(0)" onclick="smilxNav('/Team')" class="{'active' if active == 'Team' else ''}">Team</a>
-                    <a href="javascript:void(0)" onclick="smilxNav('/Publications')" class="{'active' if active == 'Publications' else ''}">Publications</a>
-                </div>
+            <div class="nav-spacer"></div>
 
-                <div class="nav-spacer"></div>
-
-                <div class="github-box">
-                    <a href="https://github.com/LuisOrz/SmilX" target="_blank" rel="noopener">🐙</a>
-                </div>
+            <div class="github-box">
+                <a href="https://github.com/LuisOrz/SmilX" target="_blank" rel="noopener">🐙</a>
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+</div>
+"""
+    st.markdown(dedent(html), unsafe_allow_html=True)
