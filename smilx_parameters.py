@@ -8,7 +8,14 @@ class initial_parameters:
 
     col1, col2, col3 = st.columns(3)
     with col2:
-      st.image('logo_smilx.png', use_container_width=True)
+      import base64, pathlib
+      _logo_bytes = pathlib.Path('logo_smilx.png').read_bytes()
+      _logo_b64 = base64.b64encode(_logo_bytes).decode()
+      st.markdown(
+          f'<img src="data:image/png;base64,{_logo_b64}" '
+          f'style="width:100%;mix-blend-mode:lighten;background:transparent;" />',
+          unsafe_allow_html=True
+      )
     
     st.markdown(
       """
@@ -100,4 +107,3 @@ class initial_parameters:
 #----------------------------------------------------------------------------------- Section 3
   def get_cycles_pi_systems(self):
       self.cycles_pi_systems = get_unsaturations(self.molecular_formula, self.n_heavy_atoms)
-
