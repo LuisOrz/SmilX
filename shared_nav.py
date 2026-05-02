@@ -42,6 +42,8 @@ def render_nav(active: str):
         margin: 0 !important;
         line-height: 42px !important;
     }
+
+    /* Botones normales del navbar */
     div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button {
         border-radius: 10px !important;
         font-weight: 700 !important;
@@ -52,17 +54,31 @@ def render_nav(active: str):
         background: #ffffff !important;
         color: #111111 !important;
         box-shadow: none !important;
+        transition: background 0.15s !important;
     }
     div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:hover {
         background: #f0f0f0 !important;
         border-color: #bbb !important;
+        color: #111111 !important;
     }
+
+    /* Botón activo (página actual) — disabled */
+    div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button[disabled],
     div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:disabled {
-        border: 1px solid #111 !important;
-        background: #111 !important;
-        color: #fff !important;
+        border: 2px solid #111111 !important;
+        background: #111111 !important;
+        color: #ffffff !important;
         opacity: 1 !important;
         cursor: default !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    /* Forzar color del texto del span interno del botón activo */
+    div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button[disabled] p,
+    div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:disabled p,
+    div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button[disabled] span,
+    div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:disabled span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     /* ── Botones Download SMILES y 3D with ELAYA ── */
@@ -73,6 +89,7 @@ def render_nav(active: str):
         border: 1px solid #555 !important;
         background: #1a1f2e !important;
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         box-shadow: none !important;
     }
     .stDownloadButton > button:hover {
@@ -87,6 +104,7 @@ def render_nav(active: str):
         border: 1px solid #555 !important;
         background: #1a1f2e !important;
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         text-decoration: none !important;
         box-shadow: none !important;
         display: inline-block;
@@ -96,12 +114,6 @@ def render_nav(active: str):
         background: #2a3248 !important;
         border-color: #aaa !important;
         color: #ffffff !important;
-    }
-
-    /* ── Logo sin fondo blanco ── */
-    div[data-testid="stImage"] img {
-        background: transparent !important;
-        mix-blend-mode: lighten;
     }
 
     .footer-wrap {color: #ffffff;}
