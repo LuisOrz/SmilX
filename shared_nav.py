@@ -8,12 +8,14 @@ def render_nav(active: str):
     header {visibility: hidden;}
     footer {visibility: hidden;}
     section[data-testid="stSidebar"] {display: none !important;}
+
     html, body, [class*="css"] {
         font-family: Arial, Helvetica, sans-serif;
         background: #030814;
         color: white;
     }
     .stApp {background: #030814 !important; color: white !important;}
+
     div[data-testid="block-container"],
     .stMainBlockContainer,
     .main .block-container {
@@ -22,10 +24,12 @@ def render_nav(active: str):
         padding-right: 1rem !important;
         max-width: 100% !important;
     }
+
+    /* ── Navbar ── */
     div[data-testid="stHorizontalBlock"]:first-of-type {
-        background: #ffffff;
-        border-bottom: 1px solid #e8e8e8;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        background: #ffffff !important;
+        border-bottom: 1px solid #e8e8e8 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10) !important;
         padding: 4px 16px !important;
         margin: 0 -1rem 1.5rem -1rem !important;
         width: calc(100% + 2rem) !important;
@@ -43,7 +47,7 @@ def render_nav(active: str):
         font-weight: 700 !important;
         font-size: 14px !important;
         padding: 5px 14px !important;
-        width: 100%;
+        width: 100% !important;
         border: 1px solid #d9d9d9 !important;
         background: #ffffff !important;
         color: #111111 !important;
@@ -60,6 +64,46 @@ def render_nav(active: str):
         opacity: 1 !important;
         cursor: default !important;
     }
+
+    /* ── Botones Download SMILES y 3D with ELAYA ── */
+    .stDownloadButton > button {
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        border: 1px solid #555 !important;
+        background: #1a1f2e !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+    }
+    .stDownloadButton > button:hover {
+        background: #2a3248 !important;
+        border-color: #aaa !important;
+        color: #ffffff !important;
+    }
+    .stLinkButton > a {
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        border: 1px solid #555 !important;
+        background: #1a1f2e !important;
+        color: #ffffff !important;
+        text-decoration: none !important;
+        box-shadow: none !important;
+        display: inline-block;
+        padding: 6px 18px;
+    }
+    .stLinkButton > a:hover {
+        background: #2a3248 !important;
+        border-color: #aaa !important;
+        color: #ffffff !important;
+    }
+
+    /* ── Logo sin fondo blanco ── */
+    div[data-testid="stImage"] img {
+        background: transparent !important;
+        mix-blend-mode: lighten;
+    }
+
     .footer-wrap {color: #ffffff;}
     </style>
     """, unsafe_allow_html=True)
