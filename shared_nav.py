@@ -21,7 +21,6 @@ def inject_base_css():
         overflow-x: hidden !important;
     }
 
-    /* Block container padding */
     .stApp > div[data-testid="block-container"],
     div[data-testid="block-container"],
     .stMainBlockContainer,
@@ -33,7 +32,7 @@ def inject_base_css():
         width: 100% !important;
     }
 
-    /* ── Navbar wrapper ── */
+    /* Navbar row */
     div[data-testid="stHorizontalBlock"]:first-of-type {
         background: #ffffff;
         border-bottom: 1px solid #e8e8e8;
@@ -46,8 +45,6 @@ def inject_base_css():
         top: 0;
         z-index: 9999;
     }
-
-    /* Brand text */
     div[data-testid="stHorizontalBlock"]:first-of-type p {
         color: #111111 !important;
         font-size: 20px !important;
@@ -56,8 +53,6 @@ def inject_base_css():
         padding: 0 !important;
         line-height: 44px !important;
     }
-
-    /* Nav buttons (inactive) */
     div[data-testid="stHorizontalBlock"]:first-of-type .stPageLink a {
         display: block;
         text-align: center;
@@ -74,8 +69,6 @@ def inject_base_css():
     div[data-testid="stHorizontalBlock"]:first-of-type .stPageLink a:hover {
         background: #f0f0f0 !important;
     }
-
-    /* Active button */
     div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button {
         border-radius: 10px !important;
         border: 1px solid #111111 !important;
@@ -86,12 +79,13 @@ def inject_base_css():
         padding: 6px 16px !important;
         width: 100%;
         cursor: default !important;
+        opacity: 1 !important;
     }
     div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:disabled {
         opacity: 1 !important;
+        color: #ffffff !important;
+        background: #111111 !important;
     }
-
-    /* GitHub link */
     div[data-testid="stHorizontalBlock"]:first-of-type a[href*="github"] {
         font-size: 24px;
         text-decoration: none !important;
@@ -99,7 +93,6 @@ def inject_base_css():
         text-align: right;
         line-height: 44px;
     }
-
     .footer-wrap { margin: 0 auto; color: #ffffff; }
     </style>
     """, unsafe_allow_html=True)
@@ -108,11 +101,13 @@ def inject_base_css():
 def render_nav(active: str):
     inject_base_css()
 
+    # URL-based navigation — works on Streamlit Cloud and locally
+    # Streamlit Cloud maps filenames to slugs: 1_About -> About, etc.
     targets = [
-        ("Explore", "main.py"),
-        ("About",   "pages/1_About.py"),
-        ("Team",    "pages/2_Team.py"),
-        ("Publications", "pages/3_Publications.py"),
+        ("Explore",      "/"),
+        ("About",        "/About"),
+        ("Team",         "/Team"),
+        ("Publications", "/Publications"),
     ]
 
     cols = st.columns([1.2, 1, 1, 1, 1, 0.5])
@@ -120,16 +115,13 @@ def render_nav(active: str):
     with cols[0]:
         st.markdown("**SmilX**")
 
-    for i, (label, target) in enumerate(targets, start=1):
+    for i, (label, url) in enumerate(targets, start=1):
         with cols[i]:
             if label == active:
                 st.button(label, key=f"nav_{label}", disabled=True,
                           use_container_width=True)
             else:
-                st.page_link(target, label=label, use_container_width=True)
+                st.page_link(url, label=label, use_container_width=True)
 
     with cols[5]:
-        st.markdown(
-            '[🐙](https://github.com/LuisOrz/SmilX)',
-            unsafe_allow_html=False,
-        )
+        st.markdown("[🐙](https://github.com/LuisOrz/SmilX)")
