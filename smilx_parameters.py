@@ -8,14 +8,7 @@ class initial_parameters:
 
     col1, col2, col3 = st.columns(3)
     with col2:
-      import base64, pathlib
-      _logo_bytes = pathlib.Path('logo_smilx.png').read_bytes()
-      _logo_b64 = base64.b64encode(_logo_bytes).decode()
-      st.markdown(
-          f'<img src="data:image/png;base64,{_logo_b64}" '
-          f'style="width:100%;mix-blend-mode:lighten;background:transparent;" />',
-          unsafe_allow_html=True
-      )
+      st.image('logo_smilx_dark.png', use_container_width=True)
     
     st.markdown(
       """
