@@ -8,19 +8,12 @@ def inject_base_css():
     header { visibility: hidden; }
     footer { visibility: hidden; }
     section[data-testid="stSidebar"] { display: none !important; }
-
     html, body, [class*="css"] {
         font-family: Arial, Helvetica, sans-serif;
         background: #030814;
         color: white;
     }
-    body { background: #030814; }
-    .stApp {
-        background: #030814 !important;
-        color: white !important;
-        overflow-x: hidden !important;
-    }
-
+    .stApp { background: #030814 !important; color: white !important; }
     .stApp > div[data-testid="block-container"],
     div[data-testid="block-container"],
     .stMainBlockContainer,
@@ -31,8 +24,6 @@ def inject_base_css():
         max-width: 100% !important;
         width: 100% !important;
     }
-
-    /* Navbar row */
     div[data-testid="stHorizontalBlock"]:first-of-type {
         background: #ffffff;
         border-bottom: 1px solid #e8e8e8;
@@ -50,11 +41,8 @@ def inject_base_css():
         font-size: 20px !important;
         font-weight: 800 !important;
         margin: 0 !important;
-        padding: 0 !important;
         line-height: 44px !important;
     }
-
-    /* All nav buttons base style */
     div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button {
         border-radius: 10px !important;
         font-weight: 700 !important;
@@ -64,30 +52,16 @@ def inject_base_css():
         border: 1px solid #d9d9d9 !important;
         background: #ffffff !important;
         color: #111111 !important;
-        transition: background 0.15s !important;
     }
     div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:hover {
         background: #f0f0f0 !important;
-        color: #111111 !important;
     }
-
-    /* Active button override */
     div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:disabled {
         border: 1px solid #111111 !important;
         background: #111111 !important;
         color: #ffffff !important;
         opacity: 1 !important;
-        cursor: default !important;
     }
-
-    div[data-testid="stHorizontalBlock"]:first-of-type a[href*="github"] {
-        font-size: 24px;
-        text-decoration: none !important;
-        display: block;
-        text-align: right;
-        line-height: 44px;
-    }
-
     .footer-wrap { margin: 0 auto; color: #ffffff; }
     </style>
     """, unsafe_allow_html=True)
@@ -111,14 +85,16 @@ def render_nav(active: str):
     for i, (label, path) in enumerate(targets, start=1):
         with cols[i]:
             if label == active:
-                # Active page: disabled button (no navigation)
                 st.button(label, key=f"nav_{label}", disabled=True,
                           use_container_width=True)
             else:
-                # Inactive page: clickable button that switches page
                 if st.button(label, key=f"nav_{label}",
                              use_container_width=True):
                     st.switch_page(path)
 
     with cols[5]:
-        st.markdown("[🐙](https://github.com/LuisOrz/SmilX)")
+        # Plain text — no markdown link, no st.page_link
+        st.markdown(
+            '<a href="https://github.com/LuisOrz/SmilX" target="_blank" rel="noopener" style="font-size:24px;text-decoration:none;color:inherit;">🐙</a>',
+            unsafe_allow_html=True
+        )
