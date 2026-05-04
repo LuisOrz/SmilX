@@ -505,33 +505,44 @@ class chemical_space_classic:
         count_smiles = size_pickle_file_closed(parameters.filename_output_pkl)
         list_smiles = get_list_smiles_from_pickle_file(parameters.filename_output_pkl)
         get_smiles_from_pickle_file(parameters.filename_output_pkl, parameters.filename_output_smi)
-        st.write(f"******************************Exploration completed: {count_smiles} isomers found******************************")
+        # ── Result banner ────────────────────────────────────────────────────
+        st.markdown(
+            f'''<div class="smilx-result-banner">
+                ✓ &nbsp;Exploration completed &nbsp;·&nbsp; {count_smiles} isomers found
+            </div>''',
+            unsafe_allow_html=True,
+        )
         with open(f"{parameters.filename_output_smi}", "r") as file:
-            col1, col2, col3 = st.columns([1,1,6])
+            col1, col2, col_spacer = st.columns([1, 1, 5])
             with col1:
                 st.download_button(
-                    label="Download SMILES",
+                    label="⬇ Download SMILES",
                     data=file,
                     file_name=f"{parameters.filename_output_smi}",
                     mime="text/smi",
+                    use_container_width=True,
                 )
-            
             with col2:
                 st.link_button(
-                    "3D with ELAYA",
-                    "https://elaya-smiles.onrender.com/"
+                    "⧉ 3D with ELAYA",
+                    "https://elaya-smiles.onrender.com/",
+                    use_container_width=True,
                 )
-            """
-            st.download_button(
-                label="Download SMILES",
-                data=file,
-                file_name=f"{parameters.filename_output_smi}",
-                mime="text/smi",
-                )"""
+        # ── Molecule grid ─────────────────────────────────────────────────────
         df = pd.DataFrame({"smi": list_smiles, "id": range(1, len(list_smiles) + 1)})
-        mg = mols2grid.display(df, smiles_col="smi", subset=["id", "img", "smi"], n_cols=6, size = (130, 90))        
+        mg = mols2grid.display(
+            df,
+            smiles_col="smi",
+            subset=["id", "img", "smi"],
+            n_cols=5,
+            size=(180, 140),
+            prerender=False,
+            style={
+                "__all__": lambda x: "background:#0d1117;color:#c8ddd7;font-family:'DM Sans',sans-serif;border:1px solid rgba(255,255,255,0.08);border-radius:10px;",
+            },
+        )
         html_grid = mg.data
-        st.components.v1.html(html_grid, height=600, scrolling=True)
+        st.components.v1.html(html_grid, height=680, scrolling=True)
 
 #-------------------------------------------------------------------------------------------------------------------------Carbenes
 def filter_canonical_smiles(list_smiles_carbened):
@@ -1241,33 +1252,41 @@ class chemical_space_carbenes:
           list_smiles.append(''.join(i_smiles.smiles))
     #------------------------------------------------------------------------------------ Section 8
     get_smiles_carened_from_list(parameters.filename_output_smi, list_smiles)
-    st.write(f"******************************Exploration completed: {len(list_smiles)} isomers found******************************")
+    # ── Result banner ────────────────────────────────────────────────────
+    st.markdown(
+        f'''<div class="smilx-result-banner">
+            ✓ &nbsp;Exploration completed &nbsp;·&nbsp; {len(list_smiles)} isomers found
+        </div>''',
+        unsafe_allow_html=True,
+    )
     with open(f"{parameters.filename_output_smi}", "r+") as file:
-        col1, col2, col3 = st.columns([1,1,6])
+        col1, col2, col_spacer = st.columns([1, 1, 5])
         with col1:
             st.download_button(
-                label="Download SMILES",
+                label="⬇ Download SMILES",
                 data=file,
                 file_name=f"{parameters.filename_output_smi}",
                 mime="text/smi",
+                use_container_width=True,
             )
-        
         with col2:
             st.link_button(
-                "3D with ELAYA",
-                "https://elaya-smiles.onrender.com/"
+                "⧉ 3D with ELAYA",
+                "https://elaya-smiles.onrender.com/",
+                use_container_width=True,
             )
-        """
-        st.download_button(
-            label="Download SMILES",
-            data=file,
-            file_name=f"{parameters.filename_output_smi}",
-            mime="text/smi",
-            )"""
+    # ── Molecule grid ─────────────────────────────────────────────────────
     df = pd.DataFrame({"smi": list_smiles, "id": range(1, len(list_smiles) + 1)})
-    mg = mols2grid.display(df, smiles_col="smi", subset=["id", "img", "smi"], n_cols=6, size = (130, 90))        
+    mg = mols2grid.display(
+        df,
+        smiles_col="smi",
+        subset=["id", "img", "smi"],
+        n_cols=5,
+        size=(180, 140),
+        prerender=False,
+        style={
+            "__all__": lambda x: "background:#0d1117;color:#c8ddd7;font-family:'DM Sans',sans-serif;border:1px solid rgba(255,255,255,0.08);border-radius:10px;",
+        },
+    )
     html_grid = mg.data
-    st.components.v1.html(html_grid, height=600, scrolling=True)
-
-        
-
+    st.components.v1.html(html_grid, height=680, scrolling=True)
