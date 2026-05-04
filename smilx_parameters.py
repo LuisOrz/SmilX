@@ -6,9 +6,11 @@ import streamlit as st
 
 
 def _get_logo_base64(filename: str) -> str:
-    """Load a PNG logo from the same directory as this file and return base64 data-URI."""
+    """Load a PNG logo from the same directory as this file and return base64 data-URI.
+    Falls back through logo_smilx_fixed.png → logo_smilx.png if the requested file
+    does not exist (avoids Streamlit Cloud MediaFileStorageError).
+    """
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    # Fallback chain: requested file → logo_smilx_fixed.png → logo_smilx.png
     candidates = [filename, "logo_smilx_fixed.png", "logo_smilx.png"]
     for name in candidates:
         path = os.path.join(base_dir, name)
@@ -16,44 +18,67 @@ def _get_logo_base64(filename: str) -> str:
             with open(path, "rb") as f:
                 data = base64.b64encode(f.read()).decode()
             return f"data:image/png;base64,{data}"
-    return ""  # no logo found – render nothing
+    return ""
 
 
 class initial_parameters:
-# ----------------------------------------------------------------------------------- Section 0
+# ─────────────────────────────────────────────── Section 0 – Header
     def __init__(self):
 
-        col1, col2, col3 = st.columns(3)
-        with col2:
-            # Use base64 embedding to avoid Streamlit Cloud MediaFileStorageError.
-            # The original call  st.image('logo_smilx_dark.png', ...)  failed because
-            # that file does not exist in the repo; we fall back to logo_smilx_fixed.png /
-            # logo_smilx.png and serve them inline so no server-side file storage is needed.
-            logo_uri = _get_logo_base64("logo_smilx_dark.png")
-            if logo_uri:
-                st.markdown(
-                    f'<img src="{logo_uri}" style="width:100%;height:auto;" />',
-                    unsafe_allow_html=True,
-                )
+        # ── Logo block: black background, proportional, centred ──────────────
+        logo_uri = _get_logo_base64("logo_smilx_dark.png")
+        if logo_uri:
+            st.markdown(
+                f"""
+                <div style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: #000000;
+                    border-radius: 14px;
+                    padding: 2.5rem 3rem;
+                    margin: 0 auto 2rem auto;
+                    max-width: 640px;
+                    border: 1px solid rgba(255,255,255,0.07);
+                ">
+                    <img src="{logo_uri}"
+                         style="width:100%;max-width:400px;height:auto;display:block;" />
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
+        # ── Citation / meta text ─────────────────────────────────────────────
         st.markdown(
             """
-            <div style="text-align: center;">
-              "Grammar-Driven SMILES Standardization with TokenSMILES" by Luis Armando Gonzalez-Ortiz, Lisset Noriega,<br>
-              Filiberto Ortiz, Gabriela Vidales-Ayala, Emmanuel Soberanis, Amilcar Meneses, Alan Aspuru-Guzik, and Gabriel Merino.<br>
-              Centro de Investigación y Estudios Avanzados (Cinvestav) Mérida<br>
-              GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation <br>
-                <br>
+            <div style="
+                text-align: center;
+                font-family: 'DM Sans', sans-serif;
+                font-size: 13.5px;
+                line-height: 1.8;
+                color: rgba(240,242,241,0.65);
+                max-width: 760px;
+                margin: 0 auto 2rem auto;
+            ">
+              <em>"Grammar-Driven SMILES Standardization with TokenSMILES"</em><br>
+              Luis Armando Gonzalez-Ortiz, Lisset Noriega, Filiberto Ortiz,
+              Gabriela Vidales-Ayala, Emmanuel Soberanis, Amilcar Meneses,
+              Alan Aspuru-Guzik &amp; Gabriel Merino<br>
+              <span style="opacity:0.5;">Centro de Investigación y Estudios Avanzados (Cinvestav) Mérida</span><br>
+              <span style="opacity:0.4;font-size:12px;">
+                GNU General Public License v3 &nbsp;·&nbsp; Copyright © 2007 Free Software Foundation
+              </span>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        self.ask_molecular_formula()       # Enter molecular formula               e.g. C6H6, C2H5NO2
-        self.write_name_output_file()      # Write name output file                "C6H6_Structural_isomers_without_carbenes"
-        self.get_syntax_rules()            # Get syntax_rules                      [[0], [0],[0, 1], [0, 1], [0]]
-        self.get_cycles_pi_systems()       # Get syntax_rules                      [[0], [0],[0, 1], [0, 1], [0]]
 
-# ----------------------------------------------------------------------------------- Section 1
+        self.ask_molecular_formula()
+        self.write_name_output_file()
+        self.get_syntax_rules()
+        self.get_cycles_pi_systems()
+
+# ─────────────────────────────────────────────── Section 1 – Formula parsing
     def count_atoms_from_molecular_formula(self, molecular_formula):
         self.n_heavy_atoms = 0
         for element, atoms in zip(molecular_formula.keys(), molecular_formula.values()):
@@ -62,7 +87,12 @@ class initial_parameters:
 
     def ask_molecular_formula(self):
         try:
-            self.str_molecular_formula = st.text_input("Enter the molecular formula (e.g. C6H6, C2H5NO2): ", value="C6H14", key="first")
+            self.str_molecular_formula = st.text_input(
+                "Molecular formula",
+                value="C6H14",
+                key="first",
+                placeholder="e.g. C6H6, C2H5NO2",
+            )
             self.opt_carbenes = st.checkbox("Search with carbenes")
             self.get_molecular_formula()
             self.is_valid_molecular_formula = True
@@ -72,8 +102,8 @@ class initial_parameters:
 
     def get_molecular_formula(self):
         elements_y_atoms = re.findall(r'([A-Z][a-z]*)(\d*)', self.str_molecular_formula)
-        if elements_y_atoms != []:
-            self.molecular_formula = dict()
+        if elements_y_atoms:
+            self.molecular_formula = {}
             for i_tuple in elements_y_atoms:
                 if i_tuple[1] == '':
                     self.molecular_formula[i_tuple[0]] = 1
@@ -86,7 +116,6 @@ class initial_parameters:
         else:
             self.molecular_formula = None
 
-        # Get output vector elements
         self.out_fm = []
         for i_element in 'C', 'N', 'O', 'S', 'B', 'P', 'F', 'Cl', 'Br', 'I':
             self.out_fm.append(self.molecular_formula[i_element])
@@ -100,31 +129,29 @@ class initial_parameters:
                 else:
                     self.str_molecular_formula += f'{i_element}{self.molecular_formula[i_element]}'
 
-# ----------------------------------------------------------------------------------- Section 2
+# ─────────────────────────────────────────────── Section 2 – File names
     def write_name_output_file(self):
-        label_carbenes = ""
-        if self.opt_carbenes:
-            label_carbenes = "_with_carbenes"
-
+        label_carbenes = "_with_carbenes" if self.opt_carbenes else ""
         self.filename_output_pkl = self.str_molecular_formula + label_carbenes + '.pkl'
         self.filename_output_smi = self.str_molecular_formula + label_carbenes + '.smi'
         self.filename_output_xyz = self.str_molecular_formula + label_carbenes + '.xyz'
 
-# ----------------------------------------------------------------------------------- Section 3
+# ─────────────────────────────────────────────── Section 3 – Syntax rules
     def get_syntax_rules(self):
-        if self.n_heavy_atoms in {1, 2, 3}:
-            self.syntax_rules = [[0] for i_atom in range(self.n_heavy_atoms)]
-        elif self.n_heavy_atoms in {4, 5, 6}:
-            self.syntax_rules = [[0], [0]] + [[0, 1] for i_atom in range(self.n_heavy_atoms - 3)] + [[0]]
-        elif self.n_heavy_atoms == 7:
+        n = self.n_heavy_atoms
+        if n in {1, 2, 3}:
+            self.syntax_rules = [[0] for _ in range(n)]
+        elif n in {4, 5, 6}:
+            self.syntax_rules = [[0], [0]] + [[0, 1] for _ in range(n - 3)] + [[0]]
+        elif n == 7:
             self.syntax_rules = [[0], [0], [0, 1], [0, 1, 2], [0, 1, 3], [0, 1], [0]]
-        elif self.n_heavy_atoms == 8:
+        elif n == 8:
             self.syntax_rules = [[0], [0], [0, 1], [0, 1, 2], [0, 1, 2, 3], [0, 1, 3], [0, 1], [0]]
-        elif self.n_heavy_atoms > 8:
+        elif n > 8:
             self.syntax_rules = [[0], [0], [0, 1], [0, 1, 2], [0, 1, 2, 3]]
-            self.syntax_rules += [[0, 1, 2, 3] for i_atom in range(self.n_heavy_atoms - 8)]
+            self.syntax_rules += [[0, 1, 2, 3] for _ in range(n - 8)]
             self.syntax_rules += [[0, 1, 3], [0, 1], [0]]
 
-# ----------------------------------------------------------------------------------- Section 4
+# ─────────────────────────────────────────────── Section 4 – Cycles / pi systems
     def get_cycles_pi_systems(self):
         self.cycles_pi_systems = get_unsaturations(self.molecular_formula, self.n_heavy_atoms)
