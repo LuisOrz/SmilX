@@ -537,11 +537,23 @@ class chemical_space_classic:
             n_cols=5,
             size=(180, 140),
             prerender=False,
-            style={
-                "__all__": lambda x: "background:#0d1117;color:#c8ddd7;font-family:'DM Sans',sans-serif;border:1px solid rgba(255,255,255,0.08);border-radius:10px;",
-            },
         )
-        html_grid = mg.data
+        _dark = """<style>
+body,html{background:#000000!important;color:#f0f2f1!important;}
+.mols2grid-container,#mols2grid{background:#000000!important;}
+.m2g-cell,.cell,[class*="cell"]{background:#0a0a0a!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:10px!important;color:#f0f2f1!important;}
+canvas,svg{background:#0a0a0a!important;}
+input,select{background:#111!important;color:#f0f2f1!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:6px!important;}
+button,.btn{background:#111!important;color:#c8ddd7!important;border:1px solid rgba(255,255,255,.12)!important;}
+button.active,.page-item.active button{background:#1a2a25!important;border-color:#c8ddd7!important;}
+[class*="smi"]{color:#8ab8b0!important;font-size:11px!important;}
+[class*="-id"],[class*="index"]{color:rgba(200,221,215,.5)!important;font-size:10px!important;}
+*{scrollbar-color:#222 #000;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:#000;}
+::-webkit-scrollbar-thumb{background:#222;border-radius:3px;}
+</style>"""
+        html_grid = mg.data.replace("</head>", _dark + "</head>") if "</head>" in mg.data else _dark + mg.data
         st.components.v1.html(html_grid, height=680, scrolling=True)
 
 #-------------------------------------------------------------------------------------------------------------------------Carbenes
@@ -1284,9 +1296,21 @@ class chemical_space_carbenes:
         n_cols=5,
         size=(180, 140),
         prerender=False,
-        style={
-            "__all__": lambda x: "background:#0d1117;color:#c8ddd7;font-family:'DM Sans',sans-serif;border:1px solid rgba(255,255,255,0.08);border-radius:10px;",
-        },
     )
-    html_grid = mg.data
+    _dark = """<style>
+body,html{background:#000000!important;color:#f0f2f1!important;}
+.mols2grid-container,#mols2grid{background:#000000!important;}
+.m2g-cell,.cell,[class*="cell"]{background:#0a0a0a!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:10px!important;color:#f0f2f1!important;}
+canvas,svg{background:#0a0a0a!important;}
+input,select{background:#111!important;color:#f0f2f1!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:6px!important;}
+button,.btn{background:#111!important;color:#c8ddd7!important;border:1px solid rgba(255,255,255,.12)!important;}
+button.active,.page-item.active button{background:#1a2a25!important;border-color:#c8ddd7!important;}
+[class*="smi"]{color:#8ab8b0!important;font-size:11px!important;}
+[class*="-id"],[class*="index"]{color:rgba(200,221,215,.5)!important;font-size:10px!important;}
+*{scrollbar-color:#222 #000;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:#000;}
+::-webkit-scrollbar-thumb{background:#222;border-radius:3px;}
+</style>"""
+    html_grid = mg.data.replace("</head>", _dark + "</head>") if "</head>" in mg.data else _dark + mg.data
     st.components.v1.html(html_grid, height=680, scrolling=True)
