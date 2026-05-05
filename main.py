@@ -26,13 +26,8 @@ st.divider()
 
 st.markdown(
     """
-    <p style="
-        font-family:'DM Sans',sans-serif;
-        font-size:14px;
-        line-height:1.8;
-        color:rgba(240,242,241,0.55);
-        max-width:820px;
-    ">
+    <p style="font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.8;
+              color:rgba(240,242,241,0.55);max-width:820px;">
     By integrating five syntactic constraints — including branch limitations,
     balanced parentheses, and aromaticity exclusion — TokenSMILES minimises
     redundant enumerations for alkanes and ensures valence and octet-rule
