@@ -538,22 +538,8 @@ class chemical_space_classic:
             size=(180, 140),
             prerender=False,
         )
-        _dark = """<style>
-body,html{background:#000000!important;color:#f0f2f1!important;}
-.mols2grid-container,#mols2grid{background:#000000!important;}
-.m2g-cell,.cell,[class*="cell"]{background:#0a0a0a!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:10px!important;color:#f0f2f1!important;}
-canvas,svg{background:#0a0a0a!important;}
-input,select{background:#111!important;color:#f0f2f1!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:6px!important;}
-button,.btn{background:#111!important;color:#c8ddd7!important;border:1px solid rgba(255,255,255,.12)!important;}
-button.active,.page-item.active button{background:#1a2a25!important;border-color:#c8ddd7!important;}
-[class*="smi"]{color:#8ab8b0!important;font-size:11px!important;}
-[class*="-id"],[class*="index"]{color:rgba(200,221,215,.5)!important;font-size:10px!important;}
-*{scrollbar-color:#222 #000;}
-::-webkit-scrollbar{width:6px;height:6px;}
-::-webkit-scrollbar-track{background:#000;}
-::-webkit-scrollbar-thumb{background:#222;border-radius:3px;}
-</style>"""
-        html_grid = mg.data.replace("</head>", _dark + "</head>") if "</head>" in mg.data else _dark + mg.data
+        _white_css = """<style>body,html{background:#ffffff!important;color:#111111!important;}.mols2grid-container,#mols2grid{background:#ffffff!important;}.m2g-cell,.cell,[class*='cell']{background:#ffffff!important;border:1px solid #e0e0e0!important;border-radius:10px!important;color:#111111!important;transition:box-shadow 0.15s!important;}.m2g-cell:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)!important;border-color:#bbb!important;}canvas,svg,img{background:#ffffff!important;}input,select{background:#f5f5f5!important;color:#111!important;border:1px solid #ddd!important;border-radius:6px!important;}button,.btn{background:#f0f0f0!important;color:#333!important;border:1px solid #ddd!important;border-radius:6px!important;}button.active,.page-item.active button{background:#0a0a0a!important;color:#fff!important;border-color:#0a0a0a!important;}[class*='smi']{color:#555!important;font-size:11px!important;}[class*='-id'],[class*='index']{color:#999!important;font-size:10px!important;}.navbar,.m2g-toolbar{background:#f8f8f8!important;border-bottom:1px solid #eee!important;}</style>"""
+        html_grid = mg.data.replace("</head>", _white_css + "</head>") if "</head>" in mg.data else _white_css + mg.data
         st.components.v1.html(html_grid, height=680, scrolling=True)
 
 #-------------------------------------------------------------------------------------------------------------------------Carbenes
@@ -1297,20 +1283,6 @@ class chemical_space_carbenes:
         size=(180, 140),
         prerender=False,
     )
-    _dark = """<style>
-body,html{background:#000000!important;color:#f0f2f1!important;}
-.mols2grid-container,#mols2grid{background:#000000!important;}
-.m2g-cell,.cell,[class*="cell"]{background:#0a0a0a!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:10px!important;color:#f0f2f1!important;}
-canvas,svg{background:#0a0a0a!important;}
-input,select{background:#111!important;color:#f0f2f1!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:6px!important;}
-button,.btn{background:#111!important;color:#c8ddd7!important;border:1px solid rgba(255,255,255,.12)!important;}
-button.active,.page-item.active button{background:#1a2a25!important;border-color:#c8ddd7!important;}
-[class*="smi"]{color:#8ab8b0!important;font-size:11px!important;}
-[class*="-id"],[class*="index"]{color:rgba(200,221,215,.5)!important;font-size:10px!important;}
-*{scrollbar-color:#222 #000;}
-::-webkit-scrollbar{width:6px;height:6px;}
-::-webkit-scrollbar-track{background:#000;}
-::-webkit-scrollbar-thumb{background:#222;border-radius:3px;}
-</style>"""
-    html_grid = mg.data.replace("</head>", _dark + "</head>") if "</head>" in mg.data else _dark + mg.data
+    _white_css = """<style>body,html{background:#ffffff!important;color:#111111!important;}.mols2grid-container,#mols2grid{background:#ffffff!important;}.m2g-cell,.cell,[class*='cell']{background:#ffffff!important;border:1px solid #e0e0e0!important;border-radius:10px!important;color:#111111!important;transition:box-shadow 0.15s!important;}.m2g-cell:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)!important;border-color:#bbb!important;}canvas,svg,img{background:#ffffff!important;}input,select{background:#f5f5f5!important;color:#111!important;border:1px solid #ddd!important;border-radius:6px!important;}button,.btn{background:#f0f0f0!important;color:#333!important;border:1px solid #ddd!important;border-radius:6px!important;}button.active,.page-item.active button{background:#0a0a0a!important;color:#fff!important;border-color:#0a0a0a!important;}[class*='smi']{color:#555!important;font-size:11px!important;}[class*='-id'],[class*='index']{color:#999!important;font-size:10px!important;}.navbar,.m2g-toolbar{background:#f8f8f8!important;border-bottom:1px solid #eee!important;}</style>"""
+    html_grid = mg.data.replace("</head>", _white_css + "</head>") if "</head>" in mg.data else _white_css + mg.data
     st.components.v1.html(html_grid, height=680, scrolling=True)
