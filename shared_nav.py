@@ -1,111 +1,135 @@
 import streamlit as st
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Inyección de CSS directamente en el DOM de Streamlit con st.markdown.
-# Esto es más confiable que components.html + window.parent en Streamlit Cloud,
-# ya que no depende de acceso cross-frame (bloqueado por CSP).
+# CSS global inyectado con st.markdown — el único método confiable en
+# Streamlit Cloud (no depende de cross-frame access bloqueado por CSP).
 # ─────────────────────────────────────────────────────────────────────────────
 
 _CSS_CONTENT = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
 
+/* ═══════════════════════════════════════════════
+   TOKENS DE DISEÑO
+═══════════════════════════════════════════════ */
+:root {
+    --bg:           #050508;
+    --surface:      #0d0d12;
+    --surface-2:    #13131a;
+    --surface-3:    #1a1a24;
+    --border:       rgba(255,255,255,0.07);
+    --border-hover: rgba(200,221,215,0.22);
+    --accent:       #c8ddd7;
+    --accent-2:     #8eb8b0;
+    --accent-glow:  rgba(200,221,215,0.12);
+    --accent-dim:   rgba(200,221,215,0.50);
+    --white:        #eef1f0;
+    --muted:        #5a6b66;
+    --muted-2:      #3d4f4a;
+    --radius:       10px;
+    --radius-lg:    16px;
+    --nav-bg:       #ffffff;
+    --nav-text:     #0d0d12;
+    --nav-border:   #e8e8e8;
+    --font-head:    'Syne', sans-serif;
+    --font-mono:    'Space Mono', monospace;
+    --font-body:    'DM Sans', sans-serif;
+    --transition:   0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
 #MainMenu, header, footer { visibility: hidden; }
 section[data-testid="stSidebar"] { display: none !important; }
+[data-testid="stHeader"]          { display: none !important; }
+[data-testid="stDecoration"]      { display: none !important; }
 
-:root {
-    --bg:        #000000;
-    --surface:   #0a0a0a;
-    --surface-2: #111111;
-    --border:    rgba(255,255,255,0.10);
-    --accent:    #c8ddd7;
-    --accent-dim: rgba(200,221,215,0.55);
-    --white:     #f0f2f1;
-    --muted:     #6b7a75;
-    --radius:    10px;
-    --nav-bg:    #ffffff;
-    --nav-text:  #111111;
-    --font-head: 'Space Mono', monospace;
-    --font-body: 'DM Sans', sans-serif;
-}
-
-html, body,
-[class="css"] {
-    font-family: var(--font-body) !important;
+html, body {
     background:  var(--bg) !important;
     color:       var(--white) !important;
+    font-family: var(--font-body) !important;
 }
 
-.stApp {
+.stApp,
+.stApp > div,
+[data-testid="stAppViewContainer"] {
     background: var(--bg) !important;
-    color:      var(--white) !important;
 }
 
-[data-testid="stAppViewContainer"] { background: var(--bg) !important; }
-[data-testid="stHeader"]           { background: var(--bg) !important; display: none !important; }
-[data-testid="stDecoration"]       { display: none !important; }
-
-/* ── Block container ── */
+/* ═══════════════════════════════════════════════
+   BLOCK CONTAINER
+═══════════════════════════════════════════════ */
 div[data-testid="block-container"],
 .stMainBlockContainer,
 .main .block-container {
     padding-top:   0 !important;
-    padding-left:  2rem !important;
-    padding-right: 2rem !important;
+    padding-left:  2.5rem !important;
+    padding-right: 2.5rem !important;
     max-width:     100% !important;
 }
 
-/* ── Navbar ── */
+/* ═══════════════════════════════════════════════
+   NAVBAR
+═══════════════════════════════════════════════ */
 div[data-testid="stHorizontalBlock"]:first-of-type {
     background:    var(--nav-bg) !important;
-    border-bottom: 1px solid #e2e2e2 !important;
-    box-shadow:    0 2px 16px rgba(0,0,0,0.07) !important;
-    padding:       6px 24px !important;
-    margin:        0 -2rem 2.5rem -2rem !important;
-    width:         calc(100% + 4rem) !important;
+    border-bottom: 1px solid var(--nav-border) !important;
+    box-shadow:    0 1px 0 rgba(0,0,0,0.04),
+                   0 4px 24px rgba(0,0,0,0.06) !important;
+    padding:       0 28px !important;
+    margin:        0 -2.5rem 3rem -2.5rem !important;
+    width:         calc(100% + 5rem) !important;
     align-items:   center !important;
+    min-height:    58px !important;
+    position:      sticky !important;
+    top:           0 !important;
+    z-index:       999 !important;
 }
+
+/* Logo "SmilX" */
 div[data-testid="stHorizontalBlock"]:first-of-type p {
     color:          var(--nav-text) !important;
     font-family:    var(--font-head) !important;
-    font-size:      17px !important;
-    font-weight:    700 !important;
-    letter-spacing: 0.05em !important;
+    font-size:      18px !important;
+    font-weight:    800 !important;
+    letter-spacing: 0.04em !important;
     margin:         0 !important;
-    line-height:    46px !important;
+    line-height:    58px !important;
 }
 
-/* Nav buttons – inactive */
+/* Botones nav — inactivos */
 div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button {
-    background:    #ffffff !important;
-    color:         #333333 !important;
-    border:        1.5px solid #d8d8d8 !important;
-    box-shadow:    none !important;
-    transition:    all 0.18s ease !important;
-    border-radius: var(--radius) !important;
-    font-family:   var(--font-body) !important;
-    font-weight:   600 !important;
-    font-size:     13px !important;
-    padding:       7px 16px !important;
-    width:         100% !important;
+    background:     transparent !important;
+    color:          #555555 !important;
+    border:         none !important;
+    border-radius:  8px !important;
+    box-shadow:     none !important;
+    font-family:    var(--font-body) !important;
+    font-weight:    500 !important;
+    font-size:      14px !important;
+    letter-spacing: 0.01em !important;
+    padding:        8px 18px !important;
+    width:          100% !important;
+    transition:     all var(--transition) !important;
 }
 div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:hover {
-    background:    #f3f3f3 !important;
-    border-color:  #aaaaaa !important;
-    color:         #111111 !important;
-    transform:     translateY(-1px) !important;
-    box-shadow:    0 3px 10px rgba(0,0,0,0.08) !important;
+    background: #f5f5f5 !important;
+    color:      #111111 !important;
 }
 
-/* Nav button – active (disabled) */
+/* Botón nav — activo (disabled) */
 div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button[disabled],
 div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:disabled {
-    border:                  2px solid #0d1117 !important;
-    background:              #0d1117 !important;
+    background:              #111111 !important;
     color:                   #ffffff !important;
+    border:                  none !important;
+    border-radius:           8px !important;
     opacity:                 1 !important;
     cursor:                  default !important;
     -webkit-text-fill-color: #ffffff !important;
+    font-weight:             600 !important;
+    letter-spacing:          0.02em !important;
 }
 div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button[disabled] p,
 div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button[disabled] span,
@@ -115,140 +139,240 @@ div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:disabled s
     -webkit-text-fill-color: #ffffff !important;
 }
 
-/* ── Download / Link buttons ── */
+/* ═══════════════════════════════════════════════
+   BOTONES DE ACCIÓN (Download / Link)
+═══════════════════════════════════════════════ */
 .stDownloadButton > button {
     border-radius:           var(--radius) !important;
     font-family:             var(--font-body) !important;
     font-weight:             600 !important;
     font-size:               13px !important;
-    padding:                 9px 20px !important;
-    border:                  1.5px solid rgba(255,255,255,0.15) !important;
-    background:              var(--surface-2) !important;
-    color:                   var(--white) !important;
-    -webkit-text-fill-color: var(--white) !important;
-    box-shadow:              0 2px 10px rgba(0,0,0,0.3) !important;
-    transition:              all 0.18s ease !important;
+    letter-spacing:          0.02em !important;
+    padding:                 10px 22px !important;
+    border:                  1px solid var(--border-hover) !important;
+    background:              linear-gradient(135deg, var(--surface-3) 0%, var(--surface-2) 100%) !important;
+    color:                   var(--accent) !important;
+    -webkit-text-fill-color: var(--accent) !important;
+    box-shadow:              0 2px 12px rgba(0,0,0,0.4),
+                             inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    transition:              all var(--transition) !important;
 }
 .stDownloadButton > button:hover {
-    background:   #1d2b36 !important;
-    border-color: rgba(255,255,255,0.30) !important;
+    background:   linear-gradient(135deg, #1e2e2a 0%, #182520 100%) !important;
+    border-color: var(--accent-2) !important;
+    box-shadow:   0 4px 20px rgba(200,221,215,0.15),
+                  inset 0 1px 0 rgba(255,255,255,0.06) !important;
     transform:    translateY(-1px) !important;
 }
+
 .stLinkButton > a {
     border-radius:           var(--radius) !important;
     font-family:             var(--font-body) !important;
     font-weight:             600 !important;
     font-size:               13px !important;
-    padding:                 9px 20px !important;
-    border:                  1.5px solid rgba(255,255,255,0.15) !important;
-    background:              var(--surface-2) !important;
-    color:                   var(--white) !important;
-    -webkit-text-fill-color: var(--white) !important;
+    letter-spacing:          0.02em !important;
+    padding:                 10px 22px !important;
+    border:                  1px solid var(--border-hover) !important;
+    background:              linear-gradient(135deg, var(--surface-3) 0%, var(--surface-2) 100%) !important;
+    color:                   var(--accent) !important;
+    -webkit-text-fill-color: var(--accent) !important;
     text-decoration:         none !important;
     display:                 inline-block !important;
-    transition:              all 0.18s ease !important;
+    box-shadow:              0 2px 12px rgba(0,0,0,0.4),
+                             inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    transition:              all var(--transition) !important;
 }
 .stLinkButton > a:hover {
-    background:   #1d2b36 !important;
-    border-color: rgba(255,255,255,0.30) !important;
+    background:   linear-gradient(135deg, #1e2e2a 0%, #182520 100%) !important;
+    border-color: var(--accent-2) !important;
+    box-shadow:   0 4px 20px rgba(200,221,215,0.15),
+                  inset 0 1px 0 rgba(255,255,255,0.06) !important;
     transform:    translateY(-1px) !important;
 }
 
-/* ── Text inputs ── */
+/* ═══════════════════════════════════════════════
+   INPUTS DE TEXTO
+═══════════════════════════════════════════════ */
 .stTextInput > div > div > input {
-    background:    var(--surface) !important;
-    border:        1.5px solid var(--border) !important;
+    background:    var(--surface-2) !important;
+    border:        1px solid var(--border) !important;
     border-radius: var(--radius) !important;
     color:         var(--white) !important;
-    font-family:   var(--font-body) !important;
+    font-family:   var(--font-mono) !important;
     font-size:     15px !important;
-    padding:       10px 14px !important;
-    transition:    border-color 0.18s !important;
+    padding:       11px 16px !important;
+    transition:    border-color var(--transition),
+                   box-shadow var(--transition) !important;
+    box-shadow:    inset 0 2px 6px rgba(0,0,0,0.3) !important;
 }
 .stTextInput > div > div > input:focus {
-    border-color: rgba(255,255,255,0.30) !important;
-    box-shadow:   0 0 3px rgba(255,255,255,0.04) !important;
+    border-color: var(--accent-2) !important;
+    box-shadow:   inset 0 2px 6px rgba(0,0,0,0.3),
+                  0 0 0 3px var(--accent-glow) !important;
+    outline:      none !important;
+}
+.stTextInput > div > div > input::placeholder {
+    color: var(--muted-2) !important;
 }
 
-/* ── Labels ── */
+/* ═══════════════════════════════════════════════
+   LABELS
+═══════════════════════════════════════════════ */
 .stTextInput label, .stSelectbox label {
     font-family:    var(--font-body) !important;
     color:          var(--muted) !important;
-    font-size:      12px !important;
-    font-weight:    500 !important;
-    letter-spacing: 0.07em !important;
+    font-size:      11px !important;
+    font-weight:    600 !important;
+    letter-spacing: 0.10em !important;
     text-transform: uppercase !important;
+    margin-bottom:  6px !important;
 }
 
-/* ── Checkbox ── */
+/* ═══════════════════════════════════════════════
+   CHECKBOX
+═══════════════════════════════════════════════ */
 .stCheckbox label {
     font-family: var(--font-body) !important;
     color:       var(--accent-dim) !important;
     font-size:   14px !important;
+    font-weight: 400 !important;
 }
 
-/* ── Divider ── */
-hr { border-color: var(--border) !important; margin: 2.5rem 0 !important; }
+/* ═══════════════════════════════════════════════
+   DIVIDER
+═══════════════════════════════════════════════ */
+hr {
+    border:     none !important;
+    border-top: 1px solid var(--border) !important;
+    margin:     3rem 0 !important;
+}
 
-/* ── General prose ── */
-p, li, span { font-family: var(--font-body) !important; line-height: 1.75 !important; }
-h1, h2, h3  { font-family: var(--font-head) !important; letter-spacing: -0.01em !important; }
+/* ═══════════════════════════════════════════════
+   TIPOGRAFÍA GENERAL
+═══════════════════════════════════════════════ */
+p, li, span {
+    font-family: var(--font-body) !important;
+    line-height: 1.80 !important;
+    color:       var(--white) !important;
+}
+h1 {
+    font-family:    var(--font-head) !important;
+    font-weight:    800 !important;
+    letter-spacing: -0.02em !important;
+    font-size:      2.4rem !important;
+}
+h2 {
+    font-family:    var(--font-head) !important;
+    font-weight:    700 !important;
+    letter-spacing: -0.015em !important;
+}
+h3 {
+    font-family:    var(--font-head) !important;
+    font-weight:    600 !important;
+    letter-spacing: -0.01em !important;
+}
 
-/* ── Alert / info boxes ── */
+/* ═══════════════════════════════════════════════
+   ALERT / INFO BOXES
+═══════════════════════════════════════════════ */
 .stAlert {
+    background:    linear-gradient(135deg, var(--surface-2) 0%, var(--surface-3) 100%) !important;
+    border:        1px solid var(--border) !important;
+    border-left:   3px solid var(--accent-2) !important;
+    border-radius: var(--radius) !important;
+    color:         var(--white) !important;
+    box-shadow:    0 4px 20px rgba(0,0,0,0.3) !important;
+}
+
+/* ═══════════════════════════════════════════════
+   CARDS (Team, Publications)
+═══════════════════════════════════════════════ */
+div[data-testid="stVerticalBlockBorderWrapper"] > div {
+    background:    linear-gradient(160deg, var(--surface-2) 0%, var(--surface) 100%) !important;
+    border:        1px solid var(--border) !important;
+    border-radius: var(--radius-lg) !important;
+    padding:       1.5rem !important;
+    transition:    box-shadow var(--transition),
+                   border-color var(--transition),
+                   transform var(--transition) !important;
+    box-shadow:    0 2px 8px rgba(0,0,0,0.3),
+                   inset 0 1px 0 rgba(255,255,255,0.03) !important;
+}
+div[data-testid="stVerticalBlockBorderWrapper"] > div:hover {
+    box-shadow:   0 8px 32px rgba(0,0,0,0.5),
+                  0 0 0 1px var(--border-hover),
+                  inset 0 1px 0 rgba(255,255,255,0.05) !important;
+    border-color: var(--border-hover) !important;
+    transform:    translateY(-2px) !important;
+}
+
+/* ═══════════════════════════════════════════════
+   IFRAME (mols2grid)
+═══════════════════════════════════════════════ */
+iframe {
+    border-radius: var(--radius-lg) !important;
+    border:        1px solid var(--border) !important;
+    overflow:      hidden !important;
+    box-shadow:    0 8px 32px rgba(0,0,0,0.4) !important;
+}
+
+/* ═══════════════════════════════════════════════
+   RESULT BANNER
+═══════════════════════════════════════════════ */
+.smilx-result-banner {
+    font-family:    var(--font-mono);
+    font-size:      11px;
+    letter-spacing: 0.10em;
+    color:          var(--accent);
+    background:     linear-gradient(90deg, rgba(200,221,215,0.07) 0%, transparent 100%);
+    border:         1px solid rgba(200,221,215,0.15);
+    border-left:    3px solid var(--accent);
+    padding:        10px 20px;
+    border-radius:  var(--radius);
+    display:        inline-flex;
+    align-items:    center;
+    gap:            10px;
+    margin:         0.75rem 0 1.5rem 0;
+    text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+.footer-wrap {
+    color:          var(--muted) !important;
+    font-family:    var(--font-body) !important;
+    font-size:      12px !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* ═══════════════════════════════════════════════
+   SELECTBOX
+═══════════════════════════════════════════════ */
+.stSelectbox > div > div {
     background:    var(--surface-2) !important;
     border:        1px solid var(--border) !important;
     border-radius: var(--radius) !important;
     color:         var(--white) !important;
 }
 
-/* ── Bordered containers (Team cards, Publications) ── */
-div[data-testid="stVerticalBlockBorderWrapper"] > div {
-    background:    var(--surface) !important;
-    border:        1px solid var(--border) !important;
-    border-radius: 14px !important;
-    padding:       1.4rem !important;
-    transition:    box-shadow 0.22s ease, border-color 0.22s ease !important;
-}
-div[data-testid="stVerticalBlockBorderWrapper"] > div:hover {
-    box-shadow:   0 6px 28px rgba(0,0,0,0.45) !important;
-    border-color: rgba(255,255,255,0.16) !important;
+/* ═══════════════════════════════════════════════
+   ANIMACIÓN DE ENTRADA
+═══════════════════════════════════════════════ */
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── mols2grid iframe ── */
-iframe {
-    border-radius: 14px !important;
-    border:        1px solid var(--border) !important;
-    overflow:      hidden !important;
-}
-
-/* ── Result banner (custom class used in chemical_space) ── */
-.smilx-result-banner {
-    font-family:    var(--font-head);
-    font-size:      12px;
-    letter-spacing: 0.08em;
-    color:          var(--accent);
-    background:     var(--surface-2);
-    border:         1px solid var(--border);
-    border-left:    3px solid var(--accent);
-    padding:        10px 20px;
-    border-radius:  var(--radius);
-    display:        inline-block;
-    margin:         0.5rem 0 1.2rem 0;
-    text-transform: uppercase;
-}
-
-.footer-wrap {
-    color:       var(--muted) !important;
-    font-family: var(--font-body) !important;
-    font-size:   12px !important;
+div[data-testid="block-container"] > div > div > div {
+    animation: fadeSlideUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 </style>
 """
 
 
 def inject_css():
-    """Inyecta el CSS global directamente mediante st.markdown (método confiable)."""
+    """Inyecta el CSS global mediante st.markdown — método confiable en Streamlit Cloud."""
     st.markdown(_CSS_CONTENT, unsafe_allow_html=True)
 
 
