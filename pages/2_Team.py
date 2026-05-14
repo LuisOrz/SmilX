@@ -4,11 +4,16 @@ from shared_nav import render_nav
 st.set_page_config(page_title="Team | SmilX", layout="wide", initial_sidebar_state="collapsed")
 render_nav("Team")
 
-st.title("Team")
-st.write("The SmilX / TokenSMILES project is developed by researchers at **Centro de Investigación y Estudios Avanzados (CINVESTAV) Mérida**.")
+st.markdown(
+    '<h1 style="margin-bottom:0.25rem;">Team</h1>'
+    '<p style="color:rgba(74,85,120,0.9);font-size:14px;margin-bottom:2rem;">'
+    'Centro de Investigación y Estudios Avanzados (CINVESTAV) Mérida'
+    '</p>',
+    unsafe_allow_html=True
+)
 
 team = [
-    {"name": "Luis Armando Gonzalez-Ortiz", "role": "Developer of SmilX / TokenSMILES",
+    {"name": "Luis Armando Gonzalez-Ortiz", "role": "Developer · SmilX / TokenSMILES",
      "desc": "Researcher focused on computational chemistry, cheminformatics, and grammar-based representations of chemical space.",
      "scholar": "https://scholar.google.com/", "linkedin": "https://linkedin.com/"},
     {"name": "Lisset Noriega", "role": "Researcher",
@@ -49,9 +54,14 @@ for i in range(0, len(team), 3):
                 st.write(member["desc"])
                 col_a, col_b = st.columns(2)
                 with col_a:
-                    st.link_button("Google Scholar", member["scholar"], use_container_width=True)
+                    st.link_button("Scholar ↗", member["scholar"], use_container_width=True)
                 with col_b:
-                    st.link_button("LinkedIn", member["linkedin"], use_container_width=True)
+                    st.link_button("LinkedIn ↗", member["linkedin"], use_container_width=True)
 
 st.divider()
-st.markdown("**Web Designers:** Gabriela Yasmin Vidales Ayala & José Emmanuel Soberanis Cáceres")
+st.markdown(
+    "<p class='footer-wrap'>"
+    "Web Designers: Gabriela Yasmin Vidales Ayala &amp; José Emmanuel Soberanis Cáceres"
+    "</p>",
+    unsafe_allow_html=True
+)
