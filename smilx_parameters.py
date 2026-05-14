@@ -16,21 +16,44 @@ class initial_parameters:
         uri = _logo_b64("logo_smilx_dark.png")
         if uri:
             st.markdown(
-                f'<div style="display:flex;justify-content:center;background:#000;'
-                f'border-radius:14px;padding:2.5rem 3rem;margin:0 auto 2rem auto;'
-                f'max-width:640px;border:1px solid rgba(255,255,255,0.07);">'
-                f'<img src="{uri}" style="width:100%;max-width:400px;height:auto;"/></div>',
+                f'<div style="'
+                f'display:flex;justify-content:center;align-items:center;'
+                f'background:linear-gradient(135deg,#0b0f1c 0%,#060912 100%);'
+                f'border-radius:16px;padding:2rem 3rem;'
+                f'margin:0 auto 1.5rem auto;max-width:560px;'
+                f'border:1px solid rgba(99,123,200,0.12);">'
+                f'<img src="{uri}" style="width:100%;max-width:340px;height:auto;"/>'
+                f'</div>',
                 unsafe_allow_html=True)
+
         st.markdown(
-            '<div style="text-align:center;font-family:DM Sans,sans-serif;font-size:13.5px;'
-            'line-height:1.8;color:rgba(240,242,241,0.65);max-width:760px;margin:0 auto 2rem auto;">'
-            '<em>"Grammar-Driven SMILES Standardization with TokenSMILES"</em><br>'
-            'Luis Armando Gonzalez-Ortiz, Lisset Noriega, Filiberto Ortiz, '
-            'Gabriela Vidales-Ayala, Emmanuel Soberanis, Amilcar Meneses, '
-            'Alan Aspuru-Guzik &amp; Gabriel Merino<br>'
-            '<span style="opacity:0.5;">Centro de Investigación y Estudios Avanzados (Cinvestav) Mérida</span><br>'
-            '<span style="opacity:0.4;font-size:12px;">GNU General Public License v3 · Copyright © 2007 Free Software Foundation</span>'
-            '</div>', unsafe_allow_html=True)
+            '<div style="'
+            'text-align:center;max-width:700px;margin:0 auto 2rem auto;'
+            'padding:1.25rem 1.5rem;border-radius:10px;'
+            'border:1px solid rgba(99,123,200,0.10);'
+            'background:rgba(11,15,28,0.6);">'
+
+            '<p style="font-family:IBM Plex Mono,monospace;font-size:12px;'
+            'font-style:italic;color:rgba(232,237,248,0.55);'
+            'letter-spacing:0.02em;margin:0 0 0.6rem 0;line-height:1.6;">'
+            '&ldquo;Grammar-Driven SMILES Standardization with TokenSMILES&rdquo;'
+            '</p>'
+
+            '<p style="font-family:Outfit,sans-serif;font-size:12px;'
+            'color:rgba(232,237,248,0.38);margin:0 0 0.35rem 0;line-height:1.7;">'
+            'Gonzalez-Ortiz, Noriega, Ortiz, Vidales-Ayala, Soberanis, '
+            'Meneses, Aspuru-Guzik &amp; Merino'
+            '</p>'
+
+            '<p style="font-family:IBM Plex Mono,monospace;font-size:10px;'
+            'color:rgba(91,138,245,0.45);letter-spacing:0.08em;'
+            'text-transform:uppercase;margin:0;">'
+            'Centro de Investigación y Estudios Avanzados (Cinvestav) Mérida'
+            '</p>'
+
+            '</div>',
+            unsafe_allow_html=True)
+
         self.ask_molecular_formula()
         self.write_name_output_file()
         self.get_syntax_rules()
@@ -41,12 +64,18 @@ class initial_parameters:
 
     def ask_molecular_formula(self):
         try:
-            self.str_molecular_formula = st.text_input("Molecular formula", value="C6H14", key="first", placeholder="e.g. C6H6, C2H5NO2")
+            self.str_molecular_formula = st.text_input(
+                "Molecular formula",
+                value="C6H14",
+                key="first",
+                placeholder="e.g. C6H6, C2H5NO2"
+            )
             self.opt_carbenes = st.checkbox("Search with carbenes")
             self.get_molecular_formula()
             self.is_valid_molecular_formula = True
             self.count_atoms_from_molecular_formula(self.molecular_formula)
-        except Exception: pass
+        except Exception:
+            pass
 
     def get_molecular_formula(self):
         elems = re.findall(r'([A-Z][a-z]*)(\d*)', self.str_molecular_formula)
