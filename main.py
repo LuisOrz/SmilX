@@ -33,7 +33,7 @@ st.divider()
 
 st.markdown(
     "<p class='footer-wrap'>"
-    "Web Designers: Gabriela Yasmin Vidales Ayala &amp; José Emmanuel Soberanis Cáceres"
+    "Web Designers: Gabriela Yasmin Vidales Ayala &amp; Filiberto Ortiz-Chi"
     "</p>",
     unsafe_allow_html=True
 )
