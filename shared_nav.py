@@ -1,17 +1,17 @@
 import streamlit as st
 
 _NAV_LINKS = [
-    ("Explore",      "main"),
-    ("About",        "1_About"),
-    ("Team",         "2_Team"),
-    ("Publications", "3_Publications"),
+    ("Explore",      ""),
+    ("About",        "About"),
+    ("Team",         "Team"),
+    ("Publications", "Publications"),
 ]
 
 def _nav_html(active: str) -> str:
     items = ""
     for label, page in _NAV_LINKS:
         cls = "nav-item nav-active" if label == active else "nav-item"
-        href = f"/{page}" if label != "Explore" else "/"
+        href = f"/{page}" if page else "/"
         items += f'<a class="{cls}" href="{href}" target="_self">{label}</a>'
     return f"""
 <nav class="smilx-nav">
