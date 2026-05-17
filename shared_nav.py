@@ -16,7 +16,7 @@ def _nav_html(active: str) -> str:
     return f"""
 <nav class="smilx-nav" id="smilx-nav">
   <span class="smilx-logo">SmilX</span>
-  <button class="nav-burger" id="nav-burger-btn" aria-label="Menu">
+  <button class="nav-burger" id="nav-burger-btn" aria-label="Menu" type="button">
     <span></span><span></span><span></span>
   </button>
   <div class="nav-links" id="nav-links">{items}</div>
@@ -24,34 +24,43 @@ def _nav_html(active: str) -> str:
 <div class="nav-spacer" id="nav-spacer"></div>
 <script>
 (function() {{
+  function openMenu() {{
+    var nav = document.getElementById('smilx-nav');
+    var spacer = document.getElementById('nav-spacer');
+    if (!nav) return;
+    nav.classList.toggle('open');
+    if (spacer) {{
+      spacer.style.height = nav.classList.contains('open')
+        ? (nav.offsetHeight + 'px') : '52px';
+    }}
+  }}
+
+  function closeMenu() {{
+    var nav = document.getElementById('smilx-nav');
+    var spacer = document.getElementById('nav-spacer');
+    if (nav) nav.classList.remove('open');
+    if (spacer) spacer.style.height = '52px';
+  }}
+
   function initBurger() {{
     var btn = document.getElementById('nav-burger-btn');
-    var nav = document.getElementById('smilx-nav');
-    var links = document.getElementById('nav-links');
-    var spacer = document.getElementById('nav-spacer');
-    if (!btn || !nav) return;
-    btn.addEventListener('click', function(e) {{
+    if (!btn || btn.dataset.smilxReady) return false;
+    btn.dataset.smilxReady = '1';
+    btn.onclick = function(e) {{
       e.stopPropagation();
-      nav.classList.toggle('open');
-      if (spacer) {{
-        spacer.style.height = nav.classList.contains('open')
-          ? (nav.offsetHeight + 'px')
-          : '0px';
-      }}
-    }});
+      openMenu();
+    }};
     document.addEventListener('click', function(e) {{
-      if (!nav.contains(e.target) && nav.classList.contains('open')) {{
-        nav.classList.remove('open');
-        if (spacer) spacer.style.height = '0px';
-      }}
+      var nav = document.getElementById('smilx-nav');
+      if (nav && !nav.contains(e.target)) closeMenu();
     }});
+    return true;
   }}
-  if (document.readyState === 'loading') {{
-    document.addEventListener('DOMContentLoaded', initBurger);
-  }} else {{
-    initBurger();
-  }}
-  setTimeout(initBurger, 500);
+
+  var _tries = 0;
+  var _iv = setInterval(function() {{
+    if (initBurger() || ++_tries > 50) clearInterval(_iv);
+  }}, 200);
 }})();
 </script>
 """
