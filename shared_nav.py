@@ -1,6 +1,10 @@
 import streamlit as st
 
 _NAV_LINKS = [
+    ("Explore",      "main"),
+    ("About",        "1_About"),
+    ("Team",         "2_Team"),
+    ("Publications", "3_Publications"),
     ("Explore",      ""),
     ("About",        "About"),
     ("Team",         "Team"),
@@ -11,49 +15,18 @@ def _nav_html(active: str) -> str:
     items = ""
     for label, page in _NAV_LINKS:
         cls = "nav-item nav-active" if label == active else "nav-item"
+        href = f"/{page}" if label != "Explore" else "/"
         href = f"/{page}" if page else "/"
         items += f'<a class="{cls}" href="{href}" target="_self">{label}</a>'
     return f"""
-<nav class="smilx-nav" id="smilx-nav">
+<nav class="smilx-nav">
   <span class="smilx-logo">SmilX</span>
-  <button class="nav-burger" id="nav-burger-btn" aria-label="Menu">
+  <button class="nav-burger" onclick="this.closest('nav').classList.toggle('open')" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
-  <div class="nav-links" id="nav-links">{items}</div>
+  <div class="nav-links">{items}</div>
 </nav>
-<div class="nav-spacer" id="nav-spacer"></div>
-<script>
-(function() {{
-  function initBurger() {{
-    var btn = document.getElementById('nav-burger-btn');
-    var nav = document.getElementById('smilx-nav');
-    var links = document.getElementById('nav-links');
-    var spacer = document.getElementById('nav-spacer');
-    if (!btn || !nav) return;
-    btn.addEventListener('click', function(e) {{
-      e.stopPropagation();
-      nav.classList.toggle('open');
-      if (spacer) {{
-        spacer.style.height = nav.classList.contains('open')
-          ? (nav.offsetHeight + 'px')
-          : '0px';
-      }}
-    }});
-    document.addEventListener('click', function(e) {{
-      if (!nav.contains(e.target) && nav.classList.contains('open')) {{
-        nav.classList.remove('open');
-        if (spacer) spacer.style.height = '0px';
-      }}
-    }});
-  }}
-  if (document.readyState === 'loading') {{
-    document.addEventListener('DOMContentLoaded', initBurger);
-  }} else {{
-    initBurger();
-  }}
-  setTimeout(initBurger, 500);
-}})();
-</script>
+<div class="nav-spacer"></div>
 """
 
 _CSS = """
@@ -104,11 +77,10 @@ html, body,
 div[data-testid="block-container"],
 .stMainBlockContainer,
 .main .block-container {
-    padding-top:    0 !important;
-    padding-left:   1.25rem !important;
-    padding-right:  1.25rem !important;
-    padding-bottom: 2rem !important;
-    max-width:      100% !important;
+    padding-top:   0 !important;
+    padding-left:  1.25rem !important;
+    padding-right: 1.25rem !important;
+    max-width:     100% !important;
 }
 
 /* ── NAVBAR ─────────────────────────────────── */
@@ -156,23 +128,17 @@ div[data-testid="block-container"],
 @media (max-width: 640px) {
     .smilx-nav {
         flex-wrap: wrap; height: auto; min-height: var(--nav-h);
-        padding: 0 1rem; position: fixed;
-        top: 0; left: 0; right: 0;
+        padding: 0 1rem; position: relative;
     }
     .smilx-logo  { line-height: var(--nav-h); }
     .nav-burger  { display: flex; line-height: var(--nav-h); margin-left: auto; }
     .nav-links   {
         display: none; flex-direction: column; align-items: stretch;
         width: 100%; padding: 0.5rem 0 0.75rem 0; gap: 2px;
-        background: rgba(6,9,18,0.98);
     }
     .smilx-nav.open .nav-links { display: flex; }
-    .nav-item    {
-        padding: 10px 12px; font-size: 14px; text-align: left;
-        color: var(--white) !important;
-    }
-    .nav-item:hover { color: var(--white) !important; background: rgba(91,138,245,0.12); }
-    .nav-spacer  { height: var(--nav-h) !important; }
+    .nav-item    { padding: 10px 12px; font-size: 14px; text-align: left; }
+    .nav-spacer  { height: 0 !important; }
 }
 .nav-spacer { height: var(--nav-h); }
 
@@ -310,7 +276,6 @@ div[data-testid="stVerticalBlockBorderWrapper"] h3 { font-size: 14px !important;
 .footer-wrap {
     color: var(--muted) !important; font-family: var(--fm) !important;
     font-size: 11px !important; letter-spacing: 0.05em !important;
-    padding-bottom: 1.5rem !important; display: block !important;
 }
 
 /* ── RESULT BANNER ──────────────────────────── */
