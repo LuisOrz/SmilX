@@ -9,7 +9,6 @@ import streamlit as st
 
 from content import LINKS, PROJECT_TITLE, PROJECT_AUTHORS, INSTITUTION
 from isomer_info import describe_all
-from smilx_chemistry_tools import get_unsaturations
 from smilx_parameters import parse_formula, initial_parameters, SUPPORTED_ELEMENTS
 from smilx_chemical_space import chemical_space_classic, chemical_space_carbenes
 from ui.components import html, img_uri, esc, gap
@@ -19,8 +18,6 @@ from ui.theme import run_js
 EXAMPLES = ["C6H14", "C6H6", "C4H8O", "C2H5NO2", "C3H6Cl2", "C4H4"]
 MODES = ["Classic", "Classic + carbenes"]
 RESULT_KEY = "smilx_result"
-SMARTS_EXAMPLES = [("C=O", "carbonyl"), ("[OX2H]", "alcohol / OH"), ("C=C", "alkene"),
-                   ("C#C", "alkyne"), ("[r3]", "3-membered ring"), ("[#7]", "contains N")]
 
 # ── State that must survive page switches ──────────────────────────────────
 if "formula_input" not in st.session_state:
@@ -61,13 +58,6 @@ def _clear_results():
 
 
 # ── Engine ─────────────────────────────────────────────────────────────────
-def unsaturation_patterns(chk):
-    mf = {e: chk.counts.get(e, 0) for e in SUPPORTED_ELEMENTS}
-    mf["hdi"] = chk.hdi
-    pats = get_unsaturations(mf, chk.n_heavy_atoms)
-    return [u for u in pats if chk.hdi == u.double_bonds + 2 * u.triple_bonds + u.cycles]
-
-
 @st.cache_data(show_spinner=False, max_entries=64)
 def run_exploration(formula: str, carbenes: bool) -> dict:
     """Run SmilX once per (formula, mode); results are cached for every visitor."""
@@ -118,17 +108,6 @@ html(f"""
   </div>
 </div>
 """)
-
-# ── How it works (before the tool, so users know what to do) ───────────────
-html("""
-<div class="howto fade d1">
-  <div class="step"><div class="n">1</div><div><b>Enter a formula</b>
-    <span>C, H, N, O, S, P, B, F, Cl, Br, I. Press Enter or pick an example.</span></div></div>
-  <div class="step"><div class="n">2</div><div><b>Choose a mode &amp; explore</b>
-    <span>TokenSMILES builds every valid skeleton, bond pattern and heteroatom position.</span></div></div>
-  <div class="step"><div class="n">3</div><div><b>Inspect &amp; download</b>
-    <span>Click any structure to zoom in and see its properties; export .smi or .csv.</span></div></div>
-</div>""")
 
 # ── Explorer card: formula · mode · Explore ────────────────────────────────
 with st.container(key="card-explorer"):
@@ -196,7 +175,7 @@ if (go or st.session_state.pop("_run", False)) and chk.ok:
 # ── Results grid ───────────────────────────────────────────────────────────
 GRID_CSS = """
 :root { color-scheme: dark; }
-body { background: #151924 !important; margin: 0; padding: 12px 12px 6px;
+body { background: #0e111a !important; margin: 0; padding: 4px 2px 6px;
   --m2g-black: #e6e8f0; --m2g-black-soft: #8c94ab; --m2g-black-10: #20263a;
   --m2g-bg: #1a1f2c; --m2g-border: solid 1px #4a5470; --m2g-hl: #adc6ff;
   --m2g-hl-shadow: 0 0 0 1px #adc6ff; --m2g-blue: #adc6ff; --m2g-blue-soft: rgba(173,198,255,.16);
@@ -270,67 +249,34 @@ if res:
     with st.container(key="results"):
         smiles = res["smiles"]
         rchk = parse_formula(res["formula"])
-        mode_label = "Classic + carbenes" if res["carbenes"] else "Classic"
-        if res["carbenes_requested"] and not res["carbenes"]:
-            mode_label += " (HDI 0, no carbenes possible)"
-        pats = unsaturation_patterns(rchk) if rchk.ok else []
-        atoms = " ".join(f"{e}·{n}" for e, n in rchk.counts.items()) if rchk.ok else ""
-        html(f"""
-<div class="summary fade">
-  <span class="result-banner"><i>✓</i><span>{len(smiles):,} isomers of {rchk.pretty if rchk.ok else esc(res['formula'])}</span></span>
-  <span class="kv tip" data-tip="Hydrogen deficiency index: rings + π bonds the formula must contain">HDI <b>{rchk.hdi if rchk.ok else '—'}</b></span>
-  <span class="kv">Heavy atoms <b>{rchk.n_heavy_atoms if rchk.ok else '—'}</b></span>
-  <span class="kv tip" data-tip="Ways to combine double bonds, triple bonds and rings that add up to the HDI">Unsaturation patterns <b>{len(pats)}</b></span>
-  <span class="kv mono">{esc(atoms)}</span>
-  <span class="kv">{esc(mode_label)} · <b>{res['seconds']:.2f}s</b></span>
-</div>""")
-
+        title = rchk.pretty if rchk.ok else esc(res["formula"])
+        c_tot, c_menu = st.columns([4, 1], vertical_alignment="center")
+        with c_tot:
+            html(f'<div class="res-head fade"><span class="result-banner"><i>✓</i>'
+                 f'<span>{len(smiles):,} isomers of {title}</span></span></div>')
         if smiles:
             smi_text = "\n".join(smiles) + "\n"
             csv_buf = io.StringIO()
             pd.DataFrame({"id": range(1, len(smiles) + 1), "smiles": smiles}).to_csv(csv_buf, index=False)
-            with st.container(horizontal=True, key="actions", gap="small", vertical_alignment="center"):
-                st.download_button(".smi", smi_text, file_name=f"{res['file_stem']}.smi",
-                                   mime="chemical/x-daylight-smiles", icon=":material/download:")
-                st.download_button(".csv", csv_buf.getvalue(), file_name=f"{res['file_stem']}.csv",
-                                   mime="text/csv", icon=":material/table_view:")
-                with st.container(key="elaya-btn", width="content"):
-                    st.link_button("3D with ELAYA", LINKS["elaya"], icon=":material/view_in_ar:")
-                st.button("Clear", on_click=_clear_results, key="clear", icon=":material/close:")
-
-            chips = "".join(f'<button class="smarts-chip" type="button" data-smarts="{esc(q)}" '
-                            f'title="{esc(d)}"><code>{esc(q)}</code> {esc(d)}</button>'
-                            for q, d in SMARTS_EXAMPLES)
-            html(f"""
-<div class="gridhelp">
-  <div class="gh-row"><b>Click a structure</b> to zoom in and see its properties ·
-    <b>Text</b> search matches the ID or SMILES text ·
-    <b>Substructure</b> search takes a SMARTS pattern and highlights the matching atoms</div>
-  <div class="gh-row chips-row"><span class="gh-lbl">Try a substructure:</span>{chips}</div>
-</div>""")
+            with c_menu:
+                with st.container(key="export-menu"):
+                    with st.popover("Export", icon=":material/download:"):
+                        st.download_button("SMILES (.smi)", smi_text, file_name=f"{res['file_stem']}.smi",
+                                           mime="chemical/x-daylight-smiles", icon=":material/download:",
+                                           width="stretch")
+                        st.download_button("Table (.csv)", csv_buf.getvalue(), file_name=f"{res['file_stem']}.csv",
+                                           mime="text/csv", icon=":material/table_view:", width="stretch")
+                        st.link_button("View in 3D with ELAYA", LINKS["elaya"], icon=":material/view_in_ar:",
+                                       width="stretch")
+                        st.button("Clear results", on_click=_clear_results, key="clear",
+                                  icon=":material/close:", width="stretch")
+                        html('<p class="pop-tip">Click a structure to zoom in. '
+                             '<b>Substructure</b> search uses SMARTS, e.g. <code>C=O</code>.</p>')
 
             props = isomer_props(tuple(smiles))
             st.iframe(_grid_html(smiles, props), height="content")
-
-            with st.expander(f"All {len(smiles):,} SMILES as plain text"):
-                st.code(smi_text, language=None)
         else:
             st.info("No isomers were generated for this formula and mode.")
-
-    # SMARTS example chips → drive the grid's own substructure search
-    run_js("""<script>
-(() => {
-  if (window.__smilxChips) return; window.__smilxChips = true;
-  document.addEventListener('click', (e) => {
-    const chip = e.target.closest && e.target.closest('.smarts-chip');
-    if (!chip) return;
-    const fr = document.querySelector('.st-key-results iframe');
-    try { fr.contentWindow.smilxSmarts(chip.dataset.smarts); } catch (err) {}
-    document.querySelectorAll('.smarts-chip.on').forEach(c => c.classList.remove('on'));
-    chip.classList.add('on');
-  });
-})();
-</script>""")
 
     if just_ran:  # every Explore → bring the grid into view once it has its height
         run_js(f"""<script>
@@ -340,7 +286,7 @@ if res:
   let tries = 0, last = -1;
   const t = setInterval(() => {{
     const fr = document.querySelector('.st-key-results iframe');
-    const target = document.querySelector('.st-key-results .summary') || fr;
+    const target = document.querySelector('.st-key-results') || fr;
     const h = fr ? fr.getBoundingClientRect().height : 0;
     tries++;
     if ((target && h > 200 && h === last) || tries > 40) {{

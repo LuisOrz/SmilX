@@ -130,6 +130,12 @@ Gonzalez-Ortiz, L. A.; Noriega, L.; Ortiz-Chi, F.; Vidales-Ayala, G.; Soberanis-
 
 ---
 
+## Changelog — website v2.3 (minimal layout)
+
+- Removed the *How it works* strip, the results data line and the grid help text.
+- The results header shows only the total of isomers; downloads (.smi, .csv), *3D with ELAYA* and *Clear results* are grouped in a single **Export** menu.
+- Fewer borders, background fills and shadows across all pages; tighter spacing.
+
 ## Changelog — website v2.2 (explorer flow & isomer zoom)
 
 - **Explorer order:** *How it works* now comes before the tool; the formula, mode and *Explore* sit on one row; "No formula in mind? Try an example" below.
