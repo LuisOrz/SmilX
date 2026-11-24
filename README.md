@@ -149,6 +149,8 @@ Gonzalez-Ortiz, L. A.; Noriega, L.; Ortiz-Chi, F.; Vidales-Ayala, G.; Soberanis-
 
 ### Updating a running app
 
+Since v2.6.1, `main.py` detects when the project's own modules changed on disk and reloads them, so a redeploy no longer mixes new pages with old modules (the cause of `ImportError` after an update). A reboot is still the cleanest option:
+
 After replacing files, restart once so Python modules reload: stop and rerun `streamlit run main.py` locally, or use **⋮ → Reboot app** on Streamlit Community Cloud. Check the footer shows the new version.
 
 ## Changelog — website v2.4 (back to the original simplicity)
