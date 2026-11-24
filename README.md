@@ -79,8 +79,10 @@ SmilX
 │   └── support.py
 ├── ui/
 │   ├── theme.py               # SmilX design system (CSS)
-│   └── components.py          # Navbar, headers, footer, image helpers
+│   ├── components.py          # Navbar, headers, footer, image helpers
+│   └── isomer_modal.py        # Isomer zoom dialog (JS/CSS) + grid hooks
 ├── content.py                 # Editable texts: team, publications, citation, links
+├── isomer_info.py             # RDKit descriptors / functional groups for the zoom dialog
 ├── smilx_parameters.py        # Formula parsing/validation and run parameters
 ├── smilx_chemistry_tools.py   # TokenSMILES / SMILES objects and chemistry rules
 ├── smilx_chemical_space.py    # Generators (classic and carbenes)
@@ -127,6 +129,15 @@ Gonzalez-Ortiz, L. A.; Noriega, L.; Ortiz-Chi, F.; Vidales-Ayala, G.; Soberanis-
 ```
 
 ---
+
+## Changelog — website v2.2 (explorer flow & isomer zoom)
+
+- **Explorer order:** *How it works* now comes before the tool; the formula, mode and *Explore* sit on one row; "No formula in mind? Try an example" below.
+- **"Start here" cue:** the formula field blinks until the user clicks into it (remembered for the session).
+- **One compact results line:** isomer count, HDI, heavy atoms, unsaturation patterns (with explanations on hover), composition, mode and time. Compact action buttons.
+- **Every Explore scrolls to the grid** automatically.
+- **Grid features from mols2grid kept and explained:** Text search (ID/SMILES text) vs Substructure (SMARTS) search with highlighted matches, one-click SMARTS examples, sorting, checkboxes plus select/copy/save actions.
+- **Isomer zoom:** clicking a structure opens a dialog with a large 2D depiction and RDKit-computed data: functional groups (curated SMARTS), rings and sizes, stereocenters and possible stereoisomers, MW, monoisotopic mass, HBD/HBA, rotatable bonds, TPSA, Crippen logP, Fsp3, InChI/InChIKey. It also shows whether the structure is a **known compound in PubChem** (name, IUPAC name, CID), queried live by InChIKey. ← → to browse, Esc to close.
 
 ## Changelog — website v2.1 (UX & Material dark theme)
 

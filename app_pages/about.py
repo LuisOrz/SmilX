@@ -120,7 +120,8 @@ with c1:
   <li>Grammar-based construction of carbon skeletons and branching</li>
   <li>Cycle formation (ring closures) with validity checks</li>
   <li>Heteroatom substitution under valence constraints</li>
-  <li>Interactive exploration via Streamlit, with .smi and .csv export</li>
+  <li>Interactive grid with text and SMARTS substructure search, selection and .smi / .csv export</li>
+  <li>Zoom into any isomer: functional groups, rings, stereochemistry and RDKit properties, plus a PubChem lookup by InChIKey</li>
   <li>RDKit-friendly workflow for downstream cheminformatics tasks</li>
 </ul></div>""")
 with c2:

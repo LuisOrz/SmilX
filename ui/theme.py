@@ -422,6 +422,69 @@ iframe { border-radius: var(--r-lg) !important; border: 1px solid var(--outline-
 .smilx-footer .credits b { color: var(--on-2); font-weight: 600; }
 @media (max-width: 760px) { .smilx-footer { grid-template-columns: 1fr 1fr; } .smilx-footer > div:first-child { grid-column: 1 / -1; } }
 
+
+/* ── How-to strip (above the explorer) ──────────────────────────── */
+.howto { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin: 1.6rem 0 .9rem; }
+.howto .step { padding: .7rem .9rem; gap: 10px; border-radius: 14px; }
+.howto .step .n { flex: 0 0 26px; height: 26px; font-size: 12px; }
+.howto .step b { font-size: .95rem; }
+.howto .step span { font-size: .84rem; line-height: 1.4; }
+@media (max-width: 760px) { .howto { grid-template-columns: 1fr; } }
+
+/* ── Explorer card details ──────────────────────────────────────── */
+.st-key-card-explorer { padding: 1.1rem 1.3rem 1rem !important; }
+.st-key-card-explorer [data-testid="stVerticalBlock"] { gap: .55rem; }
+[data-testid="stMarkdownContainer"] p.try { margin: 0 !important; font-size: 13.5px !important; color: var(--on-3) !important; white-space: nowrap; }
+p.try b { color: var(--on-2); font-weight: 600; }
+.st-key-example_pick [data-testid="stButtonGroup"] button:not([aria-label^="Help"]) { min-height: 30px !important; padding: 2px 11px !important; }
+.st-key-example_pick [data-testid="stButtonGroup"] button:not([aria-label^="Help"]) p { font-size: 12.5px !important; }
+.st-key-mode_input [data-testid="stButtonGroup"] button:not([aria-label^="Help"]) { min-height: 52px !important; padding: 4px 16px !important; }
+[data-testid="stMarkdownContainer"] p.inline-msg { margin: .1rem 0 0 !important; font-size: 13.5px !important; display: flex; gap: 8px; align-items: center; }
+p.inline-msg i { font-style: normal; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; flex: 0 0 auto; }
+p.inline-msg.err { color: var(--error) !important; } p.inline-msg.err i { background: var(--error); color: var(--error-c); }
+p.inline-msg.warn { color: var(--warn) !important; } p.inline-msg.warn i { background: var(--warn); color: var(--warn-c); }
+
+/* "Start here": blinking field until the user clicks into it */
+body:not(.smilx-started) .st-key-formula_input [data-baseweb="input"] { animation: smxAttn 1.5s ease-in-out infinite; }
+body:not(.smilx-started) .st-key-formula_input [data-testid="stWidgetLabel"] p::after {
+    content: "Start here"; margin-left: 10px; font: 700 11px var(--fh); letter-spacing: .04em; text-transform: none;
+    color: var(--on-primary); background: var(--primary); padding: 2px 9px; border-radius: 999px; vertical-align: 1px;
+    animation: smxBlink 1.5s ease-in-out infinite;
+}
+@keyframes smxAttn {
+    0%, 100% { border-color: var(--outline); box-shadow: 0 0 0 0 rgba(173,198,255,0); }
+    50% { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(173,198,255,.22), 0 0 24px rgba(91,138,245,.45); }
+}
+@keyframes smxBlink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* ── Results summary (one compact line) ─────────────────────────── */
+.st-key-results { scroll-margin-top: calc(var(--nav-h) + 14px); margin-top: 1.4rem; }
+.summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 8px; scroll-margin-top: calc(var(--nav-h) + 14px); }
+.summary .result-banner { padding: 7px 14px; font-size: 15px; margin-right: 4px; }
+.summary .kv { font-size: 13px; color: var(--on-3); background: var(--surface); border: 1px solid var(--outline-v); border-radius: 8px; padding: 6px 10px; white-space: nowrap; }
+.summary .kv b { color: var(--on); font-weight: 600; margin-left: 3px; font-variant-numeric: tabular-nums; }
+.summary .kv.mono { font-family: var(--fm); font-size: 12px; color: var(--on-2); }
+.tip { position: relative; cursor: help; text-decoration: underline dotted rgba(140,148,171,.7); text-underline-offset: 3px; }
+.tip:hover::after, .tip:focus::after {
+    content: attr(data-tip); position: absolute; left: 0; top: calc(100% + 8px); z-index: 50; width: max-content; max-width: 260px;
+    white-space: normal; background: var(--surface-4); color: var(--on); font-size: 12.5px; line-height: 1.45; padding: 8px 10px; border-radius: 8px; box-shadow: var(--e3);
+}
+.st-key-actions { gap: 8px !important; }
+.st-key-actions [data-testid="stDownloadButton"] button, .st-key-actions [data-testid="stLinkButton"] a, .st-key-actions [data-testid="stButton"] button {
+    width: auto !important; height: 36px !important; min-height: 36px !important; padding: 0 14px !important;
+}
+.st-key-actions [data-testid="stDownloadButton"] button p, .st-key-actions [data-testid="stLinkButton"] a p, .st-key-actions [data-testid="stButton"] button p { font-size: 13.5px !important; }
+
+/* Grid help line + SMARTS chips */
+.gridhelp { font-size: 13px; color: var(--on-3); display: grid; gap: 6px; margin: .1rem 0 .1rem; }
+.gridhelp b { color: var(--on-2); font-weight: 600; }
+.gh-row.chips-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.gh-lbl { margin-right: 2px; }
+.smarts-chip { font: 500 12.5px var(--fh); color: var(--on-2); background: var(--surface-2); border: 1px solid var(--outline-v); border-radius: 8px; padding: 3px 9px; cursor: pointer; transition: all var(--ease); }
+.smarts-chip code { font-family: var(--fm) !important; color: var(--primary); font-size: 12px; margin-right: 3px; background: none !important; border: none !important; padding: 0 !important; }
+.smarts-chip:hover { background: var(--surface-3); border-color: var(--outline); color: var(--on); }
+.smarts-chip.on { background: var(--primary-c); border-color: transparent; color: var(--on-primary-c); }
+
 /* ── Scroll FAB (Material extended FAB) ─────────────────────────── */
 #smilx-fab {
     position: fixed; right: 24px; bottom: 24px; z-index: 999995; height: 56px; min-width: 56px; padding: 0 18px;
@@ -527,7 +590,9 @@ def _js(script_html: str) -> str:
     """Ship a <script> as base64 so Streamlit's HTML sanitizer cannot alter it."""
     body = script_html.strip()
     body = body[len("<script>"):-len("</script>")]
-    return f"<script>eval(atob('{base64.b64encode(body.encode()).decode()}'))</script>"
+    b64 = base64.b64encode(body.encode("utf-8")).decode()
+    return ("<script>eval(new TextDecoder('utf-8').decode("
+            f"Uint8Array.from(atob('{b64}'), c => c.charCodeAt(0))))</script>")
 
 
 def run_js(script_html: str) -> None:
