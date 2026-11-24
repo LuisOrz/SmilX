@@ -3,6 +3,7 @@ import io
 import json
 import shutil
 import time
+from urllib.parse import quote
 
 import pandas as pd
 import streamlit as st
@@ -12,12 +13,19 @@ from isomer_info import describe_all
 from smilx_parameters import parse_formula, initial_parameters, SUPPORTED_ELEMENTS
 from smilx_chemical_space import chemical_space_classic, chemical_space_carbenes
 from ui.components import html, img_uri, esc, gap
-from ui.isomer_modal import MODAL_CSS, MODAL_JS, GRID_JS_TEMPLATE
-from ui.theme import run_js
+from ui.isomer_modal import inject_modal, grid_header
+from ui.theme import run_js, js_file
 
 EXAMPLES = ["C6H14", "C6H6", "C4H8O", "C2H5NO2", "C3H6Cl2", "C4H4"]
 MODES = ["Classic", "Classic + carbenes"]
 RESULT_KEY = "smilx_result"
+ICON_DL = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+           'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M5 20h14"/></svg>')
+ICON_TABLE = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+              'stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/>'
+              '<path d="M4 10h16M10 4v16"/></svg>')
+ICON_MORE = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
+             '<circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>')
 PAPER = next(p for p in PUBLICATIONS if p.get("featured"))
 PAPER_AUTHORS = ("Luis Armando Gonzalez-Ortiz, Lisset Noriega, Filiberto Ortiz, Gabriela Vidales-Ayala, "
                  "Emmanuel Soberanis, Amilcar Meneses, Alan Aspuru-Guzik and Gabriel Merino")
@@ -89,9 +97,15 @@ def isomer_props(smiles: tuple) -> dict:
 
 
 # ── Hero ───────────────────────────────────────────────────────────────────
-html(f"""
+# Landing: big logo + credits. With results on screen: one compact line, so the
+# formula field and the results share the first screen (no long jump to scroll).
+_pending = bool(st.session_state.get("go") or st.session_state.get("_run"))
+has_results = bool(st.session_state.get(RESULT_KEY)) or (
+    _pending and parse_formula(st.session_state.get("formula_input", "")).ok)
+if not has_results:
+    html(f"""
 <div class="hero fade">
-  <img class="hero-logo" src="{img_uri('assets/logo_smilx.png')}" alt="SmilX logo">
+  <img class="hero-logo" src="{img_uri('assets/logo_smilx.png')}" alt="SmilX" width="340" height="122">
   <div class="credit">
     <p class="a"><a href="{LINKS['paper']}" target="_blank" rel="noopener">&ldquo;{esc(PAPER['title'])}&rdquo;</a>
       by {esc(PAPER_AUTHORS)}.</p>
@@ -100,9 +114,17 @@ html(f"""
   </div>
 </div>
 """)
+else:
+    html(f"""
+<div class="hero-compact">
+  <img src="{img_uri('assets/logo_smilx.png')}" alt="SmilX" width="104" height="37">
+  <p><a href="{LINKS['paper']}" target="_blank" rel="noopener">&ldquo;{esc(PAPER['title'])}&rdquo;</a>
+     · Chem. Sci. 2026 · {esc(INSTITUTION.split(' (')[0])} · GPL v3</p>
+</div>
+""")
 
 # ── Explorer card: formula · mode · Explore ────────────────────────────────
-with st.container(key="explorer"):
+with st.container(key="explorer-compact" if has_results else "explorer"):
     c_in, c_mode, c_btn = st.columns([2.1, 1.55, 0.85], vertical_alignment="bottom", gap="medium")
     with c_in:
         st.text_input("Molecular formula", key="formula_input",
@@ -121,9 +143,8 @@ with st.container(key="explorer"):
         go = st.button("Explore", type="primary", width="stretch", disabled=not chk.ok,
                        key="go", icon=":material/travel_explore:")
 
-    html('<p class="try">No formula in mind? <b>Try an example:</b></p>')
-    st.pills("Examples", EXAMPLES, key="example_pick", on_change=_on_example,
-             selection_mode="single", label_visibility="collapsed")
+    st.pills("No formula in mind? Try an example", EXAMPLES, key="example_pick",
+             on_change=_on_example, selection_mode="single")
 
     if not chk.ok:
         html(f'<p class="inline-msg {"err" if chk.raw else "warn"}"><i>!</i>{esc(chk.error)}</p>')
@@ -164,13 +185,19 @@ if (go or st.session_state.pop("_run", False)) and chk.ok:
 # ── Results grid ───────────────────────────────────────────────────────────
 GRID_CSS = """
 :root { color-scheme: dark; }
-body { background: #0e111a !important; margin: 0; padding: 4px 2px 6px;
+body { background: #0e111a !important; margin: 0; padding: 0 0 8px;
   --m2g-black: #e6e8f0; --m2g-black-soft: #8c94ab; --m2g-black-10: #20263a;
   --m2g-bg: #1a1f2c; --m2g-border: solid 1px #4a5470; --m2g-hl: #adc6ff;
   --m2g-hl-shadow: 0 0 0 1px #adc6ff; --m2g-blue: #adc6ff; --m2g-blue-soft: rgba(173,198,255,.16);
   --m2g-br: 10px; --m2g-h: 40px; }
 #mols2grid { font-family: 'Outfit', system-ui, sans-serif; color: #e6e8f0; }
-#mols2grid .m2g-functions { margin-bottom: 12px; gap: 8px; }
+#mols2grid { margin: 0 !important; padding: 0 !important; }
+#mols2grid .m2g-functions { margin: 0 0 16px !important; gap: 8px; align-items: center; }
+#mols2grid ul.m2g-pagination { margin: 0 !important; padding: 0 !important; }
+#mols2grid ul.m2g-pagination li:first-child { margin-left: 0 !important; }
+#mols2grid ul.m2g-pagination li:first-child, #mols2grid ul.m2g-pagination li:first-child a { border-top-left-radius: 10px !important; border-bottom-left-radius: 10px !important; }
+#mols2grid ul.m2g-pagination li:last-child, #mols2grid ul.m2g-pagination li:last-child a { border-top-right-radius: 10px !important; border-bottom-right-radius: 10px !important; }
+#mols2grid .m2g-list { margin-top: -12px !important; padding: 0 !important; }
 #mols2grid .m2g-dropdown, #mols2grid .m2g-search-wrap { background: #1a1f2c !important; border: 1px solid #4a5470 !important; }
 #mols2grid .m2g-dropdown:not(:focus-within):hover, #mols2grid .m2g-search-wrap:not(:focus-within):hover,
 #mols2grid .m2g-sort:not(:focus-within) .m2g-order:hover { background-color: #20263a !important; border-color: #8c94ab !important; }
@@ -210,7 +237,7 @@ def _grid_html(smiles: list[str], props: dict) -> str:
     import mols2grid
     df = pd.DataFrame({"SMILES": smiles, "ID": range(1, len(smiles) + 1)})
     payload = json.dumps({"total": len(smiles), "props": props}, separators=(",", ":"))
-    header = GRID_JS_TEMPLATE.replace("__DATA__", payload.replace("</", "<\\/"))
+    header = grid_header(payload)
     grid = mols2grid.MolGrid(df, smiles_col="SMILES", size=(170, 130))   # drawn in-browser
     out = grid.display(
         subset=["ID", "img", "SMILES"],
@@ -233,58 +260,58 @@ def _grid_html(smiles: list[str], props: dict) -> str:
 
 res = st.session_state.get(RESULT_KEY)
 if res:
-    st.html(MODAL_CSS)
-    run_js(MODAL_JS)
+    inject_modal()
     with st.container(key="results"):
         smiles = res["smiles"]
         rchk = parse_formula(res["formula"])
         title = rchk.pretty if rchk.ok else esc(res["formula"])
-        c_tot, c_smi, c_3d, c_more = st.columns([3.2, 1, 1.15, 0.32], vertical_alignment="center", gap="small")
-        with c_tot:
-            html(f'<div class="res-head fade"><span class="result-banner"><i>✓</i>'
-                 f'<span>{len(smiles):,} isomers of {title}</span></span></div>')
+        dl = ""
         if smiles:
             smi_text = "\n".join(smiles) + "\n"
             csv_buf = io.StringIO()
             pd.DataFrame({"id": range(1, len(smiles) + 1), "smiles": smiles}).to_csv(csv_buf, index=False)
-            with c_smi:
-                st.download_button("Download .smi", smi_text, file_name=f"{res['file_stem']}.smi",
-                                   mime="chemical/x-daylight-smiles", icon=":material/download:",
-                                   width="stretch", key="dl-smi")
-            with c_3d:
-                html(f'<a class="elaya-link" href="{LINKS["elaya"]}" target="_blank" rel="noopener" '
-                     f'title="Open ELAYA SMILES to build 3D structures">'
-                     f'<img src="{img_uri("assets/elaya_logo.png")}" alt="">3D with ELAYA</a>')
-            with c_more:
-                with st.container(key="more-menu"):
-                    with st.popover("", icon=":material/more_vert:", help="More options"):
-                        st.download_button("Table (.csv)", csv_buf.getvalue(), file_name=f"{res['file_stem']}.csv",
-                                           mime="text/csv", icon=":material/table_view:", width="stretch")
-                        st.button("Clear results", on_click=_clear_results, key="clear",
-                                  icon=":material/close:", width="stretch")
-                        html('<p class="pop-tip">Tip: click any structure to zoom in.</p>')
-
+            smi_uri = "data:chemical/x-daylight-smiles;charset=utf-8," + quote(smi_text)
+            csv_uri = "data:text/csv;charset=utf-8," + quote(csv_buf.getvalue())
+            dl = f"""
+  <a class="rb-btn" href="{smi_uri}" download="{esc(res['file_stem'])}.smi">{ICON_DL}Download .smi</a>
+  <a class="rb-btn elaya" href="{LINKS['elaya']}" target="_blank" rel="noopener" title="Open ELAYA SMILES to build 3D structures">
+    <img src="{img_uri('assets/elaya_logo.png')}" alt="" width="22" height="22">3D with ELAYA</a>
+  <details class="rb-more">
+    <summary aria-label="More options" title="More options">{ICON_MORE}</summary>
+    <div class="rb-menu">
+      <a href="{csv_uri}" download="{esc(res['file_stem'])}.csv">{ICON_TABLE}Table (.csv)</a>
+      <p>Tip: click any structure to zoom in.</p>
+    </div>
+  </details>"""
+        html(f"""
+<div class="res-bar" id="smilx-res-bar">
+  <span class="result-banner"><i>✓</i><span>{len(smiles):,} isomers of {title}</span></span>
+  <span class="rb-space"></span>{dl}
+</div>""")
+        if smiles:
             props = isomer_props(tuple(smiles))
             st.iframe(_grid_html(smiles, props), height="content")
         else:
             st.info("No isomers were generated for this formula and mode.")
 
-    if just_ran:  # every Explore → bring the grid into view once it has its height
-        run_js(f"""<script>
-/* {time.time_ns()} */
-(() => {{
-  document.body.classList.add('smilx-started');
-  let tries = 0, last = -1;
-  const t = setInterval(() => {{
-    const fr = document.querySelector('.st-key-results iframe');
-    const target = document.querySelector('.st-key-results') || fr;
-    const h = fr ? fr.getBoundingClientRect().height : 0;
-    tries++;
-    if ((target && h > 200 && h === last) || tries > 40) {{
-      clearInterval(t);
-      if (target) target.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
-    }}
-    last = h;
-  }}, 120);
-}})();
-</script>""")
+    if just_ran:
+        # Gentle: scroll only when the results header is below the fold, and then
+        # only far enough to show the explorer + results header + first row.
+        run_js(f"/* {time.time_ns()} */\n" + """
+(() => {
+  const go = () => {
+    const bar = document.querySelector('#smilx-res-bar');
+    const exp = document.querySelector('.st-key-explorer-compact, .st-key-explorer');
+    if (!bar || !exp) return false;
+    const vh = window.innerHeight, r = bar.getBoundingClientRect();
+    if (r.top > 0 && r.bottom < vh * 0.7) return true;              // already in view
+    const nav = 72, top = exp.getBoundingClientRect().top;
+    const sc = document.querySelector('[data-testid="stMain"]');
+    const scroller = (sc && sc.scrollHeight > sc.clientHeight) ? sc : document.scrollingElement;
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    scroller.scrollBy({ top: top - nav, behavior: smooth ? 'smooth' : 'auto' });
+    return true;
+  };
+  let n = 0; const t = setInterval(() => { if (go() || ++n > 25) clearInterval(t); }, 120);
+})();
+""")

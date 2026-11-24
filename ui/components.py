@@ -6,6 +6,7 @@ import os
 import streamlit as st
 
 from content import LINKS, INSTITUTION, WEB_DESIGNERS
+from ui.theme import WEB_VERSION
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -95,7 +96,7 @@ def render_footer() -> None:
     <a href="{LINKS['license']}" target="_blank" rel="noopener">GNU GPL v3 license ↗</a>
   </div>
   <div class="credits">
-    <span>© Cinvestav Mérida · Open source under GPL-3.0</span>
+    <span>© Cinvestav Mérida · Open source under GPL-3.0 · Web v{WEB_VERSION}</span>
     <span>Web design: <b>{esc(WEB_DESIGNERS)}</b></span>
   </div>
 </div>

@@ -80,7 +80,8 @@ SmilX
 ├── ui/
 │   ├── theme.py               # SmilX design system (CSS)
 │   ├── components.py          # Navbar, headers, footer, image helpers
-│   └── isomer_modal.py        # Isomer zoom dialog (JS/CSS) + grid hooks
+│   ├── isomer_modal.py        # Loader for the isomer zoom dialog + grid hooks
+│   └── static/                # smilx.css, fab.js, isomer_modal.css/js, grid_hooks.js
 ├── content.py                 # Editable texts: team, publications, citation, links
 ├── isomer_info.py             # RDKit descriptors / functional groups for the zoom dialog
 ├── smilx_parameters.py        # Formula parsing/validation and run parameters
@@ -129,6 +130,26 @@ Gonzalez-Ortiz, L. A.; Noriega, L.; Ortiz-Chi, F.; Vidales-Ayala, G.; Soberanis-
 ```
 
 ---
+
+## Changelog — website v2.6 (alignment pass)
+
+- One 8 px spacing grid, verified by measurement at 1440, 1318, 1024 and 390 px wide:
+  - Formula field, mode selector and *Explore* are all 48 px; their labels sit on the same line, 8 px above the controls. The text field is now styled through `stTextInputRootElement`, the element current Streamlit actually renders.
+  - Results bar is one HTML row: total · Download .smi · 3D with ELAYA · ⋮. Every item is 40 px tall on the same centre line. The downloads are direct links, so nothing depends on how Streamlit stacks widgets.
+  - Search row, results bar, grid toolbar and cards share the same left and right edges. Gaps: label→examples 8 px, examples→results 32 px, bar→grid 16 px, grid toolbar→cards 16 px.
+  - Pagination is no longer clipped; the compact header wraps instead of cutting text.
+- *Clear results* was removed: a new *Explore* replaces the results.
+
+## Changelog — website v2.5 (no jumps, no overlaps)
+
+- **Styles are loaded from `ui/static/*.css|js` on every rerun.** Before, they lived inside a Python module that Streamlit keeps in memory until the server restarts, so an updated app could show new pages with the *old* look (overlapping blocks, a huge ELAYA logo, borders that had been removed). The footer shows the running version (`Web v2.5`).
+- **Search → results pattern:** large logo and credits on the landing page; once there are results, a compact one-line header so the formula field and the results share the first screen. On desktop no scrolling is needed after *Explore*; on phones the page moves only enough to keep the formula visible.
+- Results bar is a single flexible row (total · Download .smi · 3D with ELAYA · ⋮) that wraps on small screens instead of overlapping.
+- The scroll button is a small pill at the bottom centre (clear of Streamlit Cloud's corner badges) and appears only when useful: *See results*, *Scroll down* at the top of long pages, *Back to top*.
+
+### Updating a running app
+
+After replacing files, restart once so Python modules reload: stop and rerun `streamlit run main.py` locally, or use **⋮ → Reboot app** on Streamlit Community Cloud. Check the footer shows the new version.
 
 ## Changelog — website v2.4 (back to the original simplicity)
 
