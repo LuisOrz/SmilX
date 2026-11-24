@@ -191,9 +191,11 @@ div[class*="st-key-green"] a[data-testid="stPageLink-NavLink"]:hover { filter: b
 .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
 .chip.blue { color: var(--on-primary-c); border-color: transparent; background: var(--primary-c); }
 a.chip:hover { filter: brightness(1.15); }
-.credit { max-width: 760px; margin: .9rem auto 0; padding: 0 1rem; text-align: center; }
+.credit { max-width: 820px; margin: .4rem auto 0; padding: 0 1rem; text-align: center; }
+.credit a { color: var(--on) ; text-decoration: none; font-weight: 600; }
+.credit a:hover { color: var(--primary); }
 .credit .t { font-family: var(--fm); font-style: italic; font-size: 12.5px; color: var(--on-2); margin: 0 0 .35rem; }
-.credit .a { font-size: 13px; color: var(--on-3); margin: 0 0 .3rem; line-height: 1.6; }
+.credit .a { font-size: 14px; color: var(--on-2); margin: 0 0 .35rem; line-height: 1.6; }
 .credit .i { font-family: var(--fm); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--primary); opacity: .85; margin: 0; }
 
 /* ── Cards / surfaces ───────────────────────────────────────────── */
@@ -255,7 +257,7 @@ div[class*="st-key-card"] {
 [data-testid="stTextInput"] [data-baseweb="input"]:hover { border-color: var(--on-3) !important; }
 [data-testid="stTextInput"] [data-baseweb="input"]:focus-within { border-color: var(--primary) !important; box-shadow: 0 0 0 1px var(--primary) !important; }
 [data-testid="stTextInput"] input {
-    background: transparent !important; color: var(--on) !important; caret-color: var(--primary);
+    background: var(--surface-2) !important; -webkit-box-shadow: 0 0 0 40px var(--surface-2) inset !important; -webkit-text-fill-color: var(--on) !important; color: var(--on) !important; caret-color: var(--primary);
     font-family: var(--fm) !important; font-size: 18px !important; font-weight: 500; letter-spacing: .03em;
     padding: 12px 16px !important; height: 52px !important;
 }
@@ -411,7 +413,7 @@ iframe { border-radius: 0 !important; border: none !important; background: trans
 .member .links { display: flex; gap: 8px; margin-top: auto; }
 
 /* ── Footer ─────────────────────────────────────────────────────── */
-.smilx-footer { margin-top: 2.5rem; padding: 1.2rem 0 .3rem; border-top: 1px solid var(--outline-v); display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 1.5rem; }
+.smilx-footer { margin-top: 3.5rem; padding: 1.2rem 0 .3rem; border-top: 1px solid var(--outline-v); display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 1.5rem; }
 .smilx-footer img { height: 20px; width: auto; margin-bottom: .6rem; }
 .smilx-footer p { font-size: 13px; color: var(--on-3); margin: 0 0 .25rem; line-height: 1.6; }
 .smilx-footer h5 { font-family: var(--fh); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--on-2); margin: 0 0 .6rem; }
@@ -432,9 +434,9 @@ iframe { border-radius: 0 !important; border: none !important; background: trans
 @media (max-width: 760px) { .howto { grid-template-columns: 1fr; } }
 
 /* ── Explorer card details ──────────────────────────────────────── */
-.st-key-card-explorer { padding: 1.1rem 1.3rem 1rem !important; margin-top: 1.3rem; }
-.st-key-card-explorer [data-testid="stVerticalBlock"] { gap: .55rem; }
-[data-testid="stMarkdownContainer"] p.try { margin: 0 !important; font-size: 13.5px !important; color: var(--on-3) !important; white-space: nowrap; }
+.st-key-explorer { padding: 0 !important; margin-top: 2.4rem; background: transparent !important; border-radius: 0 !important; }
+.st-key-explorer [data-testid="stVerticalBlock"] { gap: .55rem; }
+[data-testid="stMarkdownContainer"] p.try { margin: .6rem 0 .1rem !important; font-size: 13.5px !important; color: var(--on-3) !important; }
 p.try b { color: var(--on-2); font-weight: 600; }
 .st-key-example_pick [data-testid="stButtonGroup"] button:not([aria-label^="Help"]) { min-height: 30px !important; padding: 2px 11px !important; border-color: transparent !important; background: var(--surface-3) !important; }
 .st-key-example_pick [data-testid="stButtonGroup"] button:not([aria-label^="Help"]):hover { background: var(--surface-4) !important; }
@@ -459,7 +461,7 @@ body:not(.smilx-started) .st-key-formula_input [data-testid="stWidgetLabel"] p::
 @keyframes smxBlink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* ── Results summary (one compact line) ─────────────────────────── */
-.st-key-results { scroll-margin-top: calc(var(--nav-h) + 10px); margin-top: .9rem; }
+.st-key-results { scroll-margin-top: calc(var(--nav-h) + 10px); margin-top: 2.2rem; }
 .summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 8px; scroll-margin-top: calc(var(--nav-h) + 14px); }
 .summary .result-banner { padding: 7px 14px; font-size: 15px; margin-right: 4px; }
 .summary .kv { font-size: 13px; color: var(--on-3); background: var(--surface); border: 1px solid var(--outline-v); border-radius: 8px; padding: 6px 10px; white-space: nowrap; }
@@ -506,6 +508,25 @@ body:not(.smilx-started) .st-key-formula_input [data-testid="stWidgetLabel"] p::
 [data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] { gap: .15rem; }
 [data-testid="stMarkdownContainer"] p.pop-tip { font-size: 12.5px !important; color: var(--on-3) !important; margin: .5rem .3rem .1rem !important; line-height: 1.5; }
 p.pop-tip b { color: var(--on-2); }
+
+/* Results row: .smi · ELAYA · more */
+.st-key-dl-smi button { height: 42px !important; }
+a.elaya-link {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px; width: 100%; height: 42px; padding: 0 14px;
+    border-radius: 999px; background: var(--green-c); color: var(--on-green-c) !important; text-decoration: none !important;
+    font: 600 14px var(--fh); white-space: nowrap; transition: filter var(--ease);
+}
+a.elaya-link img { width: 24px; height: 24px; border-radius: 50%; display: block; }
+a.elaya-link:hover { filter: brightness(1.18); }
+.st-key-more-menu { display: flex; justify-content: flex-end; }
+.st-key-more-menu [data-testid="stPopover"] button {
+    width: 42px !important; min-width: 42px !important; height: 42px !important; min-height: 42px !important; padding: 0 !important;
+    border-radius: 50% !important; border: 1px solid var(--outline) !important; background: transparent !important; box-shadow: none !important;
+}
+.st-key-more-menu [data-testid="stPopover"] button:hover { background: rgba(230,232,240,.08) !important; }
+.st-key-more-menu [data-testid="stPopover"] button [data-testid="stIconMaterial"] { color: var(--on-2) !important; }
+.st-key-more-menu [data-testid="stPopoverButton"] > div > div[aria-hidden="true"] { display: none !important; }
+.st-key-more-menu [data-testid="stPopoverButton"] > div { justify-content: center !important; }
 
 /* ── Scroll FAB (Material extended FAB) ─────────────────────────── */
 #smilx-fab {

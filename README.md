@@ -130,6 +130,13 @@ Gonzalez-Ortiz, L. A.; Noriega, L.; Ortiz-Chi, F.; Vidales-Ayala, G.; Soberanis-
 
 ---
 
+## Changelog — website v2.4 (back to the original simplicity)
+
+- Explore page header as in the original SmilX: logo, paper credit, institution and GPL v3 line; no extra panels.
+- Explorer without frame or fill; more space between sections; "Try an example" on its own line.
+- Examples and mode only set the inputs: nothing runs until **Explore** is pressed (or Enter in the formula field).
+- Results row: total · *Download .smi* · *3D with ELAYA* (with the ELAYA emblem) · ⋮ menu for .csv and Clear.
+
 ## Changelog — website v2.3 (minimal layout)
 
 - Removed the *How it works* strip, the results data line and the grid help text.

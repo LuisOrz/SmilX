@@ -7,7 +7,7 @@ import time
 import pandas as pd
 import streamlit as st
 
-from content import LINKS, PROJECT_TITLE, PROJECT_AUTHORS, INSTITUTION
+from content import LINKS, INSTITUTION, PUBLICATIONS
 from isomer_info import describe_all
 from smilx_parameters import parse_formula, initial_parameters, SUPPORTED_ELEMENTS
 from smilx_chemical_space import chemical_space_classic, chemical_space_carbenes
@@ -18,6 +18,9 @@ from ui.theme import run_js
 EXAMPLES = ["C6H14", "C6H6", "C4H8O", "C2H5NO2", "C3H6Cl2", "C4H4"]
 MODES = ["Classic", "Classic + carbenes"]
 RESULT_KEY = "smilx_result"
+PAPER = next(p for p in PUBLICATIONS if p.get("featured"))
+PAPER_AUTHORS = ("Luis Armando Gonzalez-Ortiz, Lisset Noriega, Filiberto Ortiz, Gabriela Vidales-Ayala, "
+                 "Emmanuel Soberanis, Amilcar Meneses, Alan Aspuru-Guzik and Gabriel Merino")
 
 # ── State that must survive page switches ──────────────────────────────────
 if "formula_input" not in st.session_state:
@@ -36,21 +39,18 @@ def _on_formula():            # Enter in the field → explore right away
     st.session_state._run = True
 
 
-def _on_example():            # one click on an example → explore it
+def _on_example():            # an example only fills the field; Explore runs it
     pick = st.session_state.get("example_pick")
     if pick:
         st.session_state.formula_input = pick
         st.session_state.example_pick = None
         _remember()
-        st.session_state._run = True
 
 
-def _on_mode():               # switching mode refreshes visible results
+def _on_mode():
     if st.session_state.mode_input is None:
         st.session_state.mode_input = st.session_state.get("_mode", MODES[0])
     _remember()
-    if st.session_state.get(RESULT_KEY):
-        st.session_state._run = True
 
 
 def _clear_results():
@@ -92,25 +92,17 @@ def isomer_props(smiles: tuple) -> dict:
 html(f"""
 <div class="hero fade">
   <img class="hero-logo" src="{img_uri('assets/logo_smilx.png')}" alt="SmilX logo">
-  <h1 class="tagline">Explore the chemical space of isomers with grammar-constrained SMILES</h1>
-  <p class="sub">Type a molecular formula and SmilX enumerates every valid isomer it can build
-  with the TokenSMILES grammar, ready to browse, inspect and download.</p>
-  <div class="chips">
-    <a class="chip blue" href="{LINKS['paper']}" target="_blank" rel="noopener">Chem. Sci. 2026 · TokenSMILES ↗</a>
-    <span class="chip"><span class="dot"></span>Open source · GPL-3.0</span>
-    <span class="chip">RDKit-validated output</span>
-    <span class="chip">Cinvestav Mérida</span>
-  </div>
   <div class="credit">
-    <p class="t">&ldquo;{esc(PROJECT_TITLE)}&rdquo;</p>
-    <p class="a">{esc(', '.join(PROJECT_AUTHORS[:-1]))} &amp; {esc(PROJECT_AUTHORS[-1])}</p>
-    <p class="i">{esc(INSTITUTION)}</p>
+    <p class="a"><a href="{LINKS['paper']}" target="_blank" rel="noopener">&ldquo;{esc(PAPER['title'])}&rdquo;</a>
+      by {esc(PAPER_AUTHORS)}.</p>
+    <p class="a">{esc(INSTITUTION)}</p>
+    <p class="i">GNU General Public License v3 · 29 June 2007 · © 2007 Free Software Foundation</p>
   </div>
 </div>
 """)
 
 # ── Explorer card: formula · mode · Explore ────────────────────────────────
-with st.container(key="card-explorer"):
+with st.container(key="explorer"):
     c_in, c_mode, c_btn = st.columns([2.1, 1.55, 0.85], vertical_alignment="bottom", gap="medium")
     with c_in:
         st.text_input("Molecular formula", key="formula_input",
@@ -129,12 +121,9 @@ with st.container(key="card-explorer"):
         go = st.button("Explore", type="primary", width="stretch", disabled=not chk.ok,
                        key="go", icon=":material/travel_explore:")
 
-    c_lbl, c_pills = st.columns([0.62, 2.2], vertical_alignment="center", gap="small")
-    with c_lbl:
-        html('<p class="try">No formula in mind? <b>Try an example:</b></p>')
-    with c_pills:
-        st.pills("Examples", EXAMPLES, key="example_pick", on_change=_on_example,
-                 selection_mode="single", label_visibility="collapsed")
+    html('<p class="try">No formula in mind? <b>Try an example:</b></p>')
+    st.pills("Examples", EXAMPLES, key="example_pick", on_change=_on_example,
+             selection_mode="single", label_visibility="collapsed")
 
     if not chk.ok:
         html(f'<p class="inline-msg {"err" if chk.raw else "warn"}"><i>!</i>{esc(chk.error)}</p>')
@@ -250,7 +239,7 @@ if res:
         smiles = res["smiles"]
         rchk = parse_formula(res["formula"])
         title = rchk.pretty if rchk.ok else esc(res["formula"])
-        c_tot, c_menu = st.columns([4, 1], vertical_alignment="center")
+        c_tot, c_smi, c_3d, c_more = st.columns([3.2, 1, 1.15, 0.32], vertical_alignment="center", gap="small")
         with c_tot:
             html(f'<div class="res-head fade"><span class="result-banner"><i>✓</i>'
                  f'<span>{len(smiles):,} isomers of {title}</span></span></div>')
@@ -258,20 +247,22 @@ if res:
             smi_text = "\n".join(smiles) + "\n"
             csv_buf = io.StringIO()
             pd.DataFrame({"id": range(1, len(smiles) + 1), "smiles": smiles}).to_csv(csv_buf, index=False)
-            with c_menu:
-                with st.container(key="export-menu"):
-                    with st.popover("Export", icon=":material/download:"):
-                        st.download_button("SMILES (.smi)", smi_text, file_name=f"{res['file_stem']}.smi",
-                                           mime="chemical/x-daylight-smiles", icon=":material/download:",
-                                           width="stretch")
+            with c_smi:
+                st.download_button("Download .smi", smi_text, file_name=f"{res['file_stem']}.smi",
+                                   mime="chemical/x-daylight-smiles", icon=":material/download:",
+                                   width="stretch", key="dl-smi")
+            with c_3d:
+                html(f'<a class="elaya-link" href="{LINKS["elaya"]}" target="_blank" rel="noopener" '
+                     f'title="Open ELAYA SMILES to build 3D structures">'
+                     f'<img src="{img_uri("assets/elaya_logo.png")}" alt="">3D with ELAYA</a>')
+            with c_more:
+                with st.container(key="more-menu"):
+                    with st.popover("", icon=":material/more_vert:", help="More options"):
                         st.download_button("Table (.csv)", csv_buf.getvalue(), file_name=f"{res['file_stem']}.csv",
                                            mime="text/csv", icon=":material/table_view:", width="stretch")
-                        st.link_button("View in 3D with ELAYA", LINKS["elaya"], icon=":material/view_in_ar:",
-                                       width="stretch")
                         st.button("Clear results", on_click=_clear_results, key="clear",
                                   icon=":material/close:", width="stretch")
-                        html('<p class="pop-tip">Click a structure to zoom in. '
-                             '<b>Substructure</b> search uses SMARTS, e.g. <code>C=O</code>.</p>')
+                        html('<p class="pop-tip">Tip: click any structure to zoom in.</p>')
 
             props = isomer_props(tuple(smiles))
             st.iframe(_grid_html(smiles, props), height="content")
