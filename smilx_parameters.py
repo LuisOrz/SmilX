@@ -1,112 +1,162 @@
-import re, base64, os
-from smilx_chemistry_tools import get_unsaturations, get_hdi
-import streamlit as st
+"""
+SmilX · input parameters
+------------------------
+Parses and validates a molecular formula and prepares everything the
+TokenSMILES generators need (syntax rules, unsaturation patterns, output
+file names). This module has no UI code: the Explore page builds the
+interface and calls `parse_formula()` / `initial_parameters` directly.
+"""
+import os
+import re
+import tempfile
+from dataclasses import dataclass, field
 
-def _logo_b64(filename):
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    for name in [filename, "logo_smilx_fixed.png", "logo_smilx.png"]:
-        path = os.path.join(base_dir, name)
-        if os.path.isfile(path):
-            with open(path, "rb") as f:
-                return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
-    return ""
+from smilx_chemistry_tools import get_unsaturations, get_hdi
+
+# Elements understood by the TokenSMILES grammar and their valences
+SUPPORTED_ELEMENTS = ("C", "H", "N", "O", "S", "P", "B", "F", "Cl", "Br", "I")
+VALENCES = {"C": 4, "N": 3, "P": 3, "B": 3, "O": 2, "S": 2,
+            "H": 1, "F": 1, "Cl": 1, "Br": 1, "I": 1}
+
+# Heavy-atom counts with precomputed skeletons in dependences/valence_4/
+PRECOMPUTED_MAX_HEAVY_ATOMS = 10
+
+_TOKEN = re.compile(r"([A-Z][a-z]?)(\d*)")
+
+
+@dataclass
+class FormulaCheck:
+    """Result of parsing a molecular formula (used for live validation)."""
+    raw: str
+    ok: bool = False
+    error: str = ""
+    warning: str = ""
+    counts: dict = field(default_factory=dict)
+    hdi: int | None = None
+    n_heavy_atoms: int = 0
+
+    @property
+    def pretty(self) -> str:
+        """Hill-ordered formula with HTML subscripts."""
+        order = ["C", "H"] + sorted(e for e in self.counts if e not in ("C", "H"))
+        out = ""
+        for e in order:
+            n = self.counts.get(e, 0)
+            if n:
+                out += e + (f"<sub>{n}</sub>" if n > 1 else "")
+        return out
+
+
+def parse_formula(text: str) -> FormulaCheck:
+    """Parse and validate a molecular formula such as 'C6H6' or 'C2H5NO2'."""
+    raw = (text or "").strip().replace(" ", "")
+    chk = FormulaCheck(raw=raw)
+    if not raw:
+        chk.error = "Enter a molecular formula to begin."
+        return chk
+
+    # The whole string must be made of Element+count tokens
+    if "".join(m.group(0) for m in _TOKEN.finditer(raw)) != raw:
+        chk.error = ("Could not read that formula. Use element symbols with a capital "
+                     "first letter, e.g. C6H6 or C2H5NO2.")
+        return chk
+
+    counts: dict[str, int] = {}
+    for sym, num in _TOKEN.findall(raw):
+        if sym not in VALENCES:
+            chk.error = (f"Element '{sym}' is not supported. SmilX works with "
+                         + ", ".join(SUPPORTED_ELEMENTS) + ".")
+            return chk
+        counts[sym] = counts.get(sym, 0) + (int(num) if num else 1)
+
+    if any(v == 0 for v in counts.values()):
+        chk.error = "Atom counts must be at least 1."
+        return chk
+
+    heavy = sum(v for k, v in counts.items() if k != "H")
+    if heavy == 0:
+        chk.error = "The formula needs at least one heavy (non-hydrogen) atom."
+        return chk
+
+    full = {e: counts.get(e, 0) for e in SUPPORTED_ELEMENTS}
+    hdi = get_hdi(full)
+    chk.counts, chk.n_heavy_atoms = counts, heavy
+    if hdi is None:
+        chk.error = ("This formula has no valid hydrogen deficiency index "
+                     "(odd or negative). Check the number of hydrogens.")
+        return chk
+
+    chk.hdi = hdi
+    chk.ok = True
+    if heavy > PRECOMPUTED_MAX_HEAVY_ATOMS:
+        chk.warning = (f"{heavy} heavy atoms: skeletons above "
+                       f"{PRECOMPUTED_MAX_HEAVY_ATOMS} are not precomputed, so the "
+                       "exploration may take several minutes.")
+    return chk
+
 
 class initial_parameters:
-    def __init__(self):
-        uri = _logo_b64("logo_smilx_dark.png")
-        if uri:
-            st.markdown(
-                f'<div style="'
-                f'display:flex;justify-content:center;align-items:center;'
-                f'background:linear-gradient(135deg,#0b0f1c 0%,#060912 100%);'
-                f'border-radius:16px;padding:2rem 3rem;'
-                f'margin:0 auto 1.5rem auto;max-width:560px;'
-                f'border:1px solid rgba(99,123,200,0.12);">'
-                f'<img src="{uri}" style="width:100%;max-width:340px;height:auto;"/>'
-                f'</div>',
-                unsafe_allow_html=True)
+    """Container consumed by chemical_space_classic / chemical_space_carbenes."""
 
-        st.markdown(
-            '<div style="'
-            'text-align:center;max-width:700px;margin:0 auto 2rem auto;'
-            'padding:1.25rem 1.5rem;border-radius:10px;'
-            'border:1px solid rgba(99,123,200,0.10);'
-            'background:rgba(11,15,28,0.6);">'
+    def __init__(self, str_molecular_formula: str, opt_carbenes: bool = False,
+                 workdir: str | None = None):
+        chk = parse_formula(str_molecular_formula)
+        if not chk.ok:
+            raise ValueError(chk.error)
 
-            '<p style="font-family:IBM Plex Mono,monospace;font-size:12px;'
-            'font-style:italic;color:rgba(232,237,248,0.55);'
-            'letter-spacing:0.02em;margin:0 0 0.6rem 0;line-height:1.6;">'
-            '&ldquo;Grammar-Driven SMILES Standardization with TokenSMILES&rdquo;'
-            '</p>'
+        self.str_molecular_formula = chk.raw
+        self.opt_carbenes = bool(opt_carbenes)
+        self.is_valid_molecular_formula = True
+        self.workdir = workdir or tempfile.mkdtemp(prefix="smilx_")
 
-            '<p style="font-family:Outfit,sans-serif;font-size:12px;'
-            'color:rgba(232,237,248,0.38);margin:0 0 0.35rem 0;line-height:1.7;">'
-            'Gonzalez-Ortiz, Noriega, Ortiz, Vidales-Ayala, Soberanis, '
-            'Meneses, Aspuru-Guzik &amp; Merino'
-            '</p>'
-
-            '<p style="font-family:IBM Plex Mono,monospace;font-size:10px;'
-            'color:rgba(91,138,245,0.45);letter-spacing:0.08em;'
-            'text-transform:uppercase;margin:0;">'
-            'Centro de Investigación y Estudios Avanzados (Cinvestav) Mérida'
-            '</p>'
-
-            '</div>',
-            unsafe_allow_html=True)
-
-        self.ask_molecular_formula()
+        self.get_molecular_formula()
+        self.count_atoms_from_molecular_formula(self.molecular_formula)
         self.write_name_output_file()
         self.get_syntax_rules()
         self.get_cycles_pi_systems()
 
     def count_atoms_from_molecular_formula(self, mf):
-        self.n_heavy_atoms = sum(v for k,v in mf.items() if k not in {'hdi','H'})
-
-    def ask_molecular_formula(self):
-        try:
-            self.str_molecular_formula = st.text_input(
-                "Molecular formula",
-                value="C6H14",
-                key="first",
-                placeholder="e.g. C6H6, C2H5NO2"
-            )
-            self.opt_carbenes = st.checkbox("Search with carbenes")
-            self.get_molecular_formula()
-            self.is_valid_molecular_formula = True
-            self.count_atoms_from_molecular_formula(self.molecular_formula)
-        except Exception:
-            pass
+        self.n_heavy_atoms = sum(v for k, v in mf.items() if k not in {"hdi", "H"})
 
     def get_molecular_formula(self):
-        elems = re.findall(r'([A-Z][a-z]*)(\d*)', self.str_molecular_formula)
-        if elems:
-            self.molecular_formula = {e: (1 if n=='' else int(n)) for e,n in elems}
-            for e in 'C','H','N','O','S','B','P','F','Cl','Br','I':
-                self.molecular_formula.setdefault(e, 0)
-            self.molecular_formula['hdi'] = get_hdi(self.molecular_formula)
-        else:
-            self.molecular_formula = None
-        self.out_fm = [self.molecular_formula[e] for e in ('C','N','O','S','B','P','F','Cl','Br','I')]
+        self.molecular_formula = {}
+        for e, n in _TOKEN.findall(self.str_molecular_formula):
+            self.molecular_formula[e] = self.molecular_formula.get(e, 0) + (int(n) if n else 1)
+        for e in SUPPORTED_ELEMENTS:
+            self.molecular_formula.setdefault(e, 0)
+        self.molecular_formula["hdi"] = get_hdi(
+            {e: self.molecular_formula[e] for e in SUPPORTED_ELEMENTS})
+        self.out_fm = [self.molecular_formula[e]
+                       for e in ("C", "N", "O", "S", "B", "P", "F", "Cl", "Br", "I")]
 
     def reorder_molecular_formula(self):
-        self.str_molecular_formula = ''.join(
-            (e if self.molecular_formula[e]==1 else f'{e}{self.molecular_formula[e]}')
-            for e in ('C','H','B','Br','Cl','F','I','N','O','P','S')
+        self.str_molecular_formula = "".join(
+            (e if self.molecular_formula[e] == 1 else f"{e}{self.molecular_formula[e]}")
+            for e in ("C", "H", "B", "Br", "Cl", "F", "I", "N", "O", "P", "S")
             if self.molecular_formula[e] > 0)
 
     def write_name_output_file(self):
         lbl = "_with_carbenes" if self.opt_carbenes else ""
-        self.filename_output_pkl = self.str_molecular_formula + lbl + '.pkl'
-        self.filename_output_smi = self.str_molecular_formula + lbl + '.smi'
-        self.filename_output_xyz = self.str_molecular_formula + lbl + '.xyz'
+        stem = self.str_molecular_formula + lbl
+        # Each run writes to its own folder, so simultaneous users never collide
+        self.filename_output_pkl = os.path.join(self.workdir, stem + ".pkl")
+        self.filename_output_smi = os.path.join(self.workdir, stem + ".smi")
+        self.filename_output_xyz = os.path.join(self.workdir, stem + ".xyz")
+        self.download_name_smi = stem + ".smi"
 
     def get_syntax_rules(self):
         n = self.n_heavy_atoms
-        if n in {1,2,3}: self.syntax_rules = [[0]]*n
-        elif n in {4,5,6}: self.syntax_rules = [[0],[0]]+[[0,1]]*(n-3)+[[0]]
-        elif n==7: self.syntax_rules = [[0],[0],[0,1],[0,1,2],[0,1,3],[0,1],[0]]
-        elif n==8: self.syntax_rules = [[0],[0],[0,1],[0,1,2],[0,1,2,3],[0,1,3],[0,1],[0]]
-        elif n>8: self.syntax_rules = [[0],[0],[0,1],[0,1,2],[0,1,2,3]]+[[0,1,2,3]]*(n-8)+[[0,1,3],[0,1],[0]]
+        if n in {1, 2, 3}:
+            self.syntax_rules = [[0]] * n
+        elif n in {4, 5, 6}:
+            self.syntax_rules = [[0], [0]] + [[0, 1]] * (n - 3) + [[0]]
+        elif n == 7:
+            self.syntax_rules = [[0], [0], [0, 1], [0, 1, 2], [0, 1, 3], [0, 1], [0]]
+        elif n == 8:
+            self.syntax_rules = [[0], [0], [0, 1], [0, 1, 2], [0, 1, 2, 3], [0, 1, 3], [0, 1], [0]]
+        elif n > 8:
+            self.syntax_rules = ([[0], [0], [0, 1], [0, 1, 2], [0, 1, 2, 3]]
+                                 + [[0, 1, 2, 3]] * (n - 8) + [[0, 1, 3], [0, 1], [0]])
 
     def get_cycles_pi_systems(self):
         self.cycles_pi_systems = get_unsaturations(self.molecular_formula, self.n_heavy_atoms)

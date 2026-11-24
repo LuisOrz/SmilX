@@ -1,6 +1,9 @@
-tqdm == 4.67.1
-mols2grid == 2.0.0
-rdkit == 2024.9.5
+streamlit>=1.50
+tqdm==4.67.1
+mols2grid==2.0.0
+rdkit==2024.9.5
+pandas
+numpy
 opencv-python-headless
 PyOpenGL
 PyOpenGL_accelerate

@@ -1,18 +1,37 @@
+"""
+SmilX · grammar-constrained chemical space explorer
+Entry point: `streamlit run main.py`
+"""
+import os
+
 import streamlit as st
-st.set_page_config(page_title="SmilX", layout="wide", initial_sidebar_state="collapsed")
-from shared_nav import render_nav
-from smilx_parameters import initial_parameters
-from smilx_chemical_space import chemical_space_classic, chemical_space_carbenes
-from rdkit import Chem  # noqa
 
-render_nav("Explore")
-parameters = initial_parameters()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-if not parameters.opt_carbenes or parameters.molecular_formula["hdi"] == 0:
-    with st.spinner("Computing chemical space…"):
-        chemical_space_classic(parameters)
-else:
-    with st.spinner("Computing chemical space…"):
-        chemical_space_carbenes(parameters)
+st.set_page_config(
+    page_title="SmilX · TokenSMILES isomer explorer",
+    page_icon=os.path.join(BASE_DIR, "assets", "favicon.png"),
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
-st.divider()
+from ui.theme import inject_theme  # noqa: E402
+from ui.components import render_nav, render_footer  # noqa: E402
+
+PAGES = [
+    st.Page("app_pages/explore.py", title="Explore", url_path="explore", default=True),
+    st.Page("app_pages/about.py", title="About", url_path="about"),
+    st.Page("app_pages/publications.py", title="Publications", url_path="publications"),
+    st.Page("app_pages/cite.py", title="How to cite", url_path="cite"),
+    st.Page("app_pages/team.py", title="Team", url_path="team"),
+    st.Page("app_pages/support.py", title="Support", url_path="support"),
+]
+
+# Hidden built-in menu: our own navbar drives the same router, so switching
+# pages never reloads the browser and session state (results, inputs) survives.
+current = st.navigation(PAGES, position="hidden")
+
+inject_theme()
+render_nav(PAGES, current)
+current.run()
+render_footer()

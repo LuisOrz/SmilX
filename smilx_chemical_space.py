@@ -8,9 +8,11 @@ from smilx_chemistry_tools import standard_smiles
 from smilx_chemistry_tools import smiles_carbened
 from rdkit import Chem
 from rdkit.Chem import AllChem
-import streamlit as st
 import pandas as pd
-import mols2grid
+
+# Absolute path to the precomputed skeleton library, independent of the CWD
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEPENDENCES_DIR = os.path.join(BASE_DIR, 'dependences', 'valence_4')
 
 def list_files(path_folder):
     try:
@@ -124,7 +126,7 @@ def copy_file_pkl(path_src, path_dest, delete_sourse = False):
     try:
         shutil.copy(path_src, path_dest)
         if delete_sourse:
-            delete_file(source_filename)
+            delete_file(path_src)
     except FileNotFoundError:
         return "Error: El archivo de origen no fue encontrado."
     except Exception as e:
@@ -132,7 +134,8 @@ def copy_file_pkl(path_src, path_dest, delete_sourse = False):
 
 class smilx_hydrocarbons:
     def __init__(self, cycle_pi_system, parameters):
-        self.folder_src = f'dependences/valence_4/{parameters.n_heavy_atoms}'
+        self.folder_src = os.path.join(DEPENDENCES_DIR, str(parameters.n_heavy_atoms))
+        self.workdir = getattr(parameters, 'workdir', '.')
         self.src_file_target = f'{cycle_pi_system.double_bonds}-{cycle_pi_system.triple_bonds}-{cycle_pi_system.cycles}.pkl'
         self.path_src_target = f'{self.folder_src}/{self.src_file_target}'
         self.code_target = np.array([cycle_pi_system.double_bonds, cycle_pi_system.triple_bonds, cycle_pi_system.cycles])
@@ -157,8 +160,9 @@ class smilx_hydrocarbons:
                     except EOFError:
                         break
                   
-        src_filename = "alkanes_0.pkl"
-        dest_filename = "alkanes_1.pkl"
+        src_filename = os.path.join(self.workdir, "alkanes_0.pkl")
+        dest_filename = os.path.join(self.workdir, "alkanes_1.pkl")
+        target_000 = os.path.join(self.workdir, "0-0-0.pkl")
     
         with open(src_filename, "wb") as src_file:
           new_smiles = standard_smiles(n_heavy_atoms)
@@ -187,13 +191,13 @@ class smilx_hydrocarbons:
         if is_file_empty(dest_filename):
           filter_smiles_alkanes(src_filename, dest_filename)
           delete_file(src_filename)
-          os.rename(dest_filename, '0-0-0.pkl')
+          os.rename(dest_filename, target_000)
         else:
           filter_smiles_alkanes(dest_filename, src_filename)
           delete_file(dest_filename)
-          os.rename(src_filename, '0-0-0.pkl')
+          os.rename(src_filename, target_000)
             
-        move_file_pkl('0-0-0.pkl', self.folder_src)
+        move_file_pkl(target_000, self.folder_src)
         self.path_src_file_nearest = self.folder_src + "/0-0-0.pkl"
         self.nearest_code = np.array([0, 0, 0])
 
@@ -317,8 +321,9 @@ class smilx_dehydrogenation:
 class smilx_atom_substitution:
     def __init__(self, dehydrogenation, extended_molecular_formula, parameters):
         path_out_filename = f"{parameters.filename_output_pkl}"
-        path_src_filename = f"0_{parameters.filename_output_pkl}"
-        path_dest_filename = f"1_{parameters.filename_output_pkl}"
+        _dir, _base = os.path.split(parameters.filename_output_pkl)
+        path_src_filename = os.path.join(_dir, f"0_{_base}")
+        path_dest_filename = os.path.join(_dir, f"1_{_base}")
         copy_file_pkl(dehydrogenation.path_src_file_nearest, path_src_filename)
         create_file_pkl(path_dest_filename)
         iteration = 0
@@ -343,7 +348,7 @@ class smilx_atom_substitution:
                 smiles = pickle.load(src_file)
                 canon_smiles = Chem.CanonSmiles(smiles.smiles)
                 out_fm = []
-                for i_element in 'C', 'N', 'O', 'S', 'B', 'P', 'F', 'I', 'Cl', 'Br':
+                for i_element in 'C', 'N', 'O', 'S', 'B', 'P', 'F', 'Cl', 'Br', 'I':
                     out_fm.append(smiles.atoms.count(i_element))
                 if canon_smiles not in reg_canon_smiles and out_fm == parameters.out_fm:
                     reg_canon_smiles[canon_smiles] = 0
@@ -351,8 +356,8 @@ class smilx_atom_substitution:
               except EOFError:
                 break
 
-        delete_file(f"0_{parameters.filename_output_pkl}")
-        delete_file(f"1_{parameters.filename_output_pkl}")
+        delete_file(os.path.join(_dir, f"0_{_base}"))
+        delete_file(os.path.join(_dir, f"1_{_base}"))
                     
     def replicate_replacing(self, src_filename, dest_filename, molecular_formula, iteration):
       with open(src_filename, 'rb') as src_file, open(dest_filename, 'ab') as dest_file:
@@ -377,53 +382,6 @@ class smilx_atom_substitution:
             break
 
 # ─────────────────────────────────────────────────────────────────────────────
-_WHITE_CSS = """<style>
-body,html{background:#ffffff!important;color:#111111!important;}
-.mols2grid-container,#mols2grid{background:#ffffff!important;}
-.m2g-cell,.cell,[class*='cell']{background:#ffffff!important;border:1px solid #e0e0e0!important;border-radius:10px!important;color:#111111!important;transition:box-shadow 0.15s!important;}
-.m2g-cell:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)!important;border-color:#bbb!important;}
-canvas,svg,img{background:#ffffff!important;}
-input,select{background:#f5f5f5!important;color:#111!important;border:1px solid #ddd!important;border-radius:6px!important;}
-button,.btn{background:#f0f0f0!important;color:#333!important;border:1px solid #ddd!important;border-radius:6px!important;}
-button.active,.page-item.active button{background:#0a0a0a!important;color:#fff!important;border-color:#0a0a0a!important;}
-[class*='smi']{color:#555!important;font-size:11px!important;}
-[class*='-id'],[class*='index']{color:#999!important;font-size:10px!important;}
-.navbar,.m2g-toolbar{background:#f8f8f8!important;border-bottom:1px solid #eee!important;}
-</style>"""
-
-def _render_buttons(smi_file, smi_filename):
-    """Botones de acción alineados a la derecha, tamaño compacto."""
-    _, bcol1, bcol2 = st.columns([5, 1, 1])
-    with bcol1:
-        st.download_button(
-            label="⬇ Download SMILES",
-            data=smi_file,
-            file_name=smi_filename,
-            mime="text/smi",
-            use_container_width=True,
-        )
-    with bcol2:
-        st.link_button(
-            "⧉ 3D with ELAYA",
-            "https://elaya-smiles.onrender.com/",
-            use_container_width=True,
-        )
-
-def _render_grid(list_smiles):
-    """Grilla de moléculas."""
-    df = pd.DataFrame({"smi": list_smiles, "id": range(1, len(list_smiles) + 1)})
-    mg = mols2grid.display(
-        df,
-        smiles_col="smi",
-        subset=["id", "img", "smi"],
-        n_cols=5,
-        size=(180, 140),
-        prerender=False,
-    )
-    html_grid = mg.data.replace("</head>", _WHITE_CSS + "</head>") if "</head>" in mg.data else _WHITE_CSS + mg.data
-    st.components.v1.html(html_grid, height=680, scrolling=True)
-
-# ─────────────────────────────────────────────────────────────────────────────
 class chemical_space_classic:
     def __init__(self, parameters):
         dest_filename = parameters.filename_output_pkl
@@ -445,16 +403,9 @@ class chemical_space_classic:
         list_smiles = get_list_smiles_from_pickle_file(parameters.filename_output_pkl)
         get_smiles_from_pickle_file(parameters.filename_output_pkl, parameters.filename_output_smi)
 
-        st.markdown(
-            f'<div class="smilx-result-banner">'
-            f'✓ &nbsp;Exploration completed &nbsp;·&nbsp; {count_smiles} isomers found'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
-        with open(f"{parameters.filename_output_smi}", "r") as file:
-            _render_buttons(file, parameters.filename_output_smi)
-
-        _render_grid(list_smiles)
+        self.count_smiles = count_smiles
+        self.list_smiles = list_smiles
+        self.filename_output_smi = parameters.filename_output_smi
 
 # ─────────────────────────────────────────────────────────────────────────────
 def filter_canonical_smiles(list_smiles_carbened):
@@ -948,13 +899,6 @@ class chemical_space_carbenes:
 
     get_smiles_carened_from_list(parameters.filename_output_smi, list_smiles)
 
-    st.markdown(
-        f'<div class="smilx-result-banner">'
-        f'✓ &nbsp;Exploration completed &nbsp;·&nbsp; {len(list_smiles)} isomers found'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
-    with open(f"{parameters.filename_output_smi}", "r+") as file:
-        _render_buttons(file, parameters.filename_output_smi)
-
-    _render_grid(list_smiles)
+    self.count_smiles = len(list_smiles)
+    self.list_smiles = list_smiles
+    self.filename_output_smi = parameters.filename_output_smi
