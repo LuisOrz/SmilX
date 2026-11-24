@@ -1,4 +1,4 @@
-streamlit>=1.50
+streamlit>=1.67,<2
 tqdm==4.67.1
 mols2grid==2.0.0
 rdkit==2024.9.5

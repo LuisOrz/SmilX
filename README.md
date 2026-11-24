@@ -128,6 +128,15 @@ Gonzalez-Ortiz, L. A.; Noriega, L.; Ortiz-Chi, F.; Vidales-Ayala, G.; Soberanis-
 
 ---
 
+## Changelog — website v2.1 (UX & Material dark theme)
+
+- **Material Design dark theme:** navy-tinted surfaces instead of pure black, tonal elevation, three text-emphasis levels and a desaturated SmilX blue (`#adc6ff`). All text passes WCAG AA (≥ 4.5:1); the dimmest text is 5:1.
+- **Theme no longer depends on `config.toml`:** every widget is styled in `ui/theme.py`, so pills, mode selector and focus colors look the same wherever the app is launched.
+- **Compact explorer:** formula field and *Explore* on one row; examples and mode on the next; live analysis in a single strip.
+- **Faster flow:** press Enter or click an example to explore immediately; switching mode refreshes visible results; the page scrolls to the results and shows a confirmation toast.
+- **Animated scroll button** (bottom right): *Scroll down* → *See results* → *Back to top*.
+- **2D structures back on white**, with a readable dark toolbar. The white flashes on hover/selection in mols2grid's search, sort and pagination controls are gone.
+
 ## Changelog — website v2
 
 - **Navigation fixed:** one router (`st.navigation`) with an in-app navbar. Pages switch without reloading, and results and inputs are kept when you come back to Explore. The old menu had duplicated links and URLs that returned "Page not found".
