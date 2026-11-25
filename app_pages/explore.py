@@ -33,7 +33,7 @@ PAPER_AUTHORS = ("Luis Armando Gonzalez-Ortiz, Lisset Noriega, Filiberto Ortiz, 
 
 # ── State that must survive page switches ──────────────────────────────────
 if "formula_input" not in st.session_state:
-    st.session_state.formula_input = st.session_state.get("_formula", "C6H14")
+    st.session_state.formula_input = st.session_state.get("_formula", "")
 if "mode_input" not in st.session_state or st.session_state.mode_input is None:
     st.session_state.mode_input = st.session_state.get("_mode", MODES[0])
 
@@ -43,9 +43,8 @@ def _remember():
     st.session_state._mode = st.session_state.mode_input or MODES[0]
 
 
-def _on_formula():            # Enter in the field → explore right away
+def _on_formula():            # value committed (Enter or leaving the field): just remember it
     _remember()
-    st.session_state._run = True
 
 
 def _on_example():            # an example only fills the field; Explore runs it
@@ -115,7 +114,7 @@ with st.container(key="explorer"):
     c_in, c_mode, c_btn = st.columns([2.1, 1.55, 0.85], vertical_alignment="bottom", gap="medium")
     with c_in:
         st.text_input("Molecular formula", key="formula_input",
-                      placeholder="e.g. C6H6, C2H5NO2", on_change=_on_formula, max_chars=40)
+                      placeholder="Type a formula, e.g. C6H6", on_change=_on_formula, max_chars=40)
     chk = parse_formula(st.session_state.formula_input)
     with c_mode:
         st.segmented_control(
@@ -133,12 +132,31 @@ with st.container(key="explorer"):
     st.pills("No formula in mind? Try an example", EXAMPLES, key="example_pick",
              on_change=_on_example, selection_mode="single")
 
-    if not chk.ok:
-        html(f'<p class="inline-msg {"err" if chk.raw else "warn"}"><i>!</i>{esc(chk.error)}</p>')
+    if not chk.ok and chk.raw:            # empty field: the typing animation is the hint
+        html(f'<p class="inline-msg err"><i>!</i>{esc(chk.error)}</p>')
     elif chk.warning:
         html(f'<p class="inline-msg warn"><i>!</i>{esc(chk.warning)}</p>')
 
-# "Start here" pulse on the formula field until the user clicks into it
+# Typing animation in the empty formula field (examples typed and deleted)
+run_js("window.__smilxExamples = " + json.dumps(EXAMPLES) + ";")
+js_file("typewriter.js")
+
+# Enter in the formula field = press Explore (leaving the field does not explore)
+run_js("""
+(() => {
+  if (window.__smilxEnter) return; window.__smilxEnter = true;
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || !e.target.closest || !e.target.closest('.st-key-formula_input')) return;
+    let n = 0;
+    const t = setInterval(() => {          // wait for Streamlit to commit the value
+      const b = document.querySelector('.st-key-go button');
+      if ((b && !b.disabled) || ++n > 20) { clearInterval(t); if (b && !b.disabled) b.click(); }
+    }, 120);
+  }, true);
+})();
+""")
+
+# "Start here" label on the formula field until the user clicks into it
 run_js("""<script>
 (() => {
   const b = document.body;

@@ -30,6 +30,9 @@
     --green-c:     #133d2b;
     --on-green-c:  #a8f2cc;
     --green-12:    rgba(111,219,166,.12);
+    /* SmilX signature gradient (blue → mint), shared by every page */
+    --grad:        linear-gradient(92deg, #adc6ff 0%, #9fd0ff 45%, #6fdba6 100%);
+    --grad-strong: linear-gradient(92deg, #7ba3ff 0%, #5fc4f0 50%, #3ecf8e 100%);
     /* Feedback */
     --error:       #ffb4ab;
     --error-c:     #5a1d19;
@@ -443,7 +446,6 @@ p.inline-msg.err { color: var(--error) !important; } p.inline-msg.err i { backgr
 p.inline-msg.warn { color: var(--warn) !important; } p.inline-msg.warn i { background: var(--warn); color: var(--warn-c); }
 
 /* "Start here": blinking field until the user clicks into it */
-body:not(.smilx-started) .st-key-explorer .st-key-formula_input [data-baseweb="input"] { animation: smxAttn 1.5s ease-in-out infinite; }
 body:not(.smilx-started) .st-key-explorer .st-key-formula_input [data-testid="stWidgetLabel"] p::after {
     content: "Start here"; margin-left: 10px; font: 700 11px var(--fh); letter-spacing: .04em; text-transform: none;
     color: var(--on-primary); background: var(--primary); padding: 2px 9px; border-radius: 999px; vertical-align: 1px;
@@ -605,7 +607,6 @@ a.elaya-link:hover { filter: brightness(1.18); }
 [data-testid="stTextInputRootElement"]:focus-within { border-color: var(--primary) !important; box-shadow: 0 0 0 1px var(--primary) !important; }
 [data-testid="stTextInputRootElement"] > div { height: 100% !important; background: transparent !important; border: none !important; }
 [data-testid="stTextInputRootElement"] input { height: 100% !important; line-height: normal !important; }
-body:not(.smilx-started) .st-key-explorer .st-key-formula_input [data-testid="stTextInputRootElement"] { animation: smxAttn 1.5s ease-in-out infinite; }
 
 /* results bar sits in a markdown block: cancel Streamlit's negative bottom margin */
 [data-testid="stElementContainer"]:has(#smilx-res-bar), [data-testid="stMarkdown"]:has(#smilx-res-bar),
@@ -652,3 +653,52 @@ body:not(.smilx-started) .st-key-explorer .st-key-formula_input [data-testid="st
 .ss-rings b { color: var(--on); }
 @media (max-width: 900px) { .ss-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ss-cols { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .ss-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ss-row { grid-template-columns: 120px 1fr 32px; } }
+
+
+/* ── Signature gradient, used the same way on every page ────────── */
+/* ambient light: blue from the top, a breath of mint on the right */
+[data-testid="stAppViewContainer"]::before {
+    background:
+        radial-gradient(820px 420px at 42% -160px, rgba(91,138,245,0.16), transparent 70%),
+        radial-gradient(620px 380px at 78% -60px, rgba(62,207,142,0.10), transparent 70%),
+        radial-gradient(rgba(173,198,255,0.05) 1px, transparent 1px) !important;
+    background-size: auto, auto, 28px 28px !important;
+}
+/* hero: soft blue→mint halo behind the logo, gradient paper title */
+.hero { position: relative; }
+.hero::before { content: ""; position: absolute; left: 50%; top: 10px; width: min(560px, 90vw); height: 200px; transform: translateX(-50%);
+    background: radial-gradient(closest-side at 40% 50%, rgba(91,138,245,.22), transparent), radial-gradient(closest-side at 62% 55%, rgba(62,207,142,.16), transparent);
+    filter: blur(18px); z-index: -1; pointer-events: none; }
+.credit a { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+.credit a:hover { filter: brightness(1.15); }
+.credit .i { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent !important; opacity: .9; }
+/* primary action */
+[data-testid="stBaseButton-primary"] { background: var(--grad) !important; }
+[data-testid="stBaseButton-primary"]:hover { background: var(--grad) !important; filter: brightness(1.08) saturate(1.05);
+    box-shadow: 0 6px 22px -6px rgba(91,138,245,.55), 0 6px 22px -8px rgba(62,207,142,.45) !important; }
+[data-testid="stBaseButton-primary"]:disabled { background: rgba(230,232,240,.12) !important; filter: none; }
+/* focus ring + typing glow on the formula field */
+[data-testid="stTextInputRootElement"]:focus-within, [data-testid="stTextInputRootElement"].smx-typing {
+    border-color: transparent !important;
+    background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box, var(--grad) border-box !important;
+}
+[data-testid="stTextInputRootElement"]:focus-within { box-shadow: 0 0 0 1px rgba(173,198,255,.25), 0 0 18px -4px rgba(91,138,245,.45) !important; }
+[data-testid="stTextInputRootElement"].smx-typing {
+    --smx-p: 0;
+    box-shadow: 0 0 calc(6px + 22px * var(--smx-p)) calc(-2px + 2px * var(--smx-p)) rgba(91,138,245,.55),
+                0 0 calc(4px + 26px * var(--smx-p)) -4px rgba(62,207,142,.45) !important;
+    transition: box-shadow .12s linear;
+}
+[data-testid="stTextInputRootElement"].smx-typing input::placeholder { color: var(--on) !important; opacity: .85; }
+/* "Start here" pill: static gradient, no blinking (the typing already draws the eye) */
+body:not(.smilx-started) .st-key-explorer .st-key-formula_input [data-testid="stWidgetLabel"] p::after { background: var(--grad); animation: none; }
+/* small gradient touches shared by all pages */
+.eyebrow::before { background: var(--grad) !important; width: 22px; }
+.ss-row .bar i { background: var(--grad) !important; opacity: .9; }
+.ss { border-top: none !important; position: relative; }
+.ss::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--grad); opacity: .35; }
+.step .n, .pipe .k { background-image: linear-gradient(135deg, rgba(173,198,255,.18), rgba(111,219,166,.18)) !important; }
+.st-key-smilx-nav div[class*="st-key-nav-on"] a[data-testid="stPageLink-NavLink"] {
+    background: linear-gradient(92deg, rgba(173,198,255,.22), rgba(111,219,166,.18)) !important; }
+.smilx-footer { border-top: none !important; position: relative; }
+.smilx-footer::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--grad); opacity: .3; }

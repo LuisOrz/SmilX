@@ -81,7 +81,7 @@ SmilX
 │   ├── theme.py               # SmilX design system (CSS)
 │   ├── components.py          # Navbar, headers, footer, image helpers
 │   ├── isomer_modal.py        # Loader for the isomer zoom dialog + grid hooks
-│   └── static/                # smilx.css, fab.js, isomer_modal.css/js, grid_hooks.js
+│   └── static/                # smilx.css, fab.js, typewriter.js, isomer_modal.css/js, grid_hooks.js
 ├── content.py                 # Editable texts: team, publications, citation, links
 ├── isomer_info.py             # RDKit descriptors / functional groups for the zoom dialog
 ├── smilx_parameters.py        # Formula parsing/validation and run parameters
@@ -130,6 +130,13 @@ Gonzalez-Ortiz, L. A.; Noriega, L.; Ortiz-Chi, F.; Vidales-Ayala, G.; Soberanis-
 ```
 
 ---
+
+## Changelog — website v2.8 (typing animation & signature gradient)
+
+- **Typing animation (as in ELAYA SMILES):** while the formula field is empty, it types each example, holds it and deletes it. The field border lights up with the blue→mint gradient as the word grows. It pauses when the user clicks the field or types, and resumes when the field is empty again. Disabled for users who prefer reduced motion. Code: `ui/static/typewriter.js`.
+- **Signature gradient `--grad` (SmilX blue → mint), shared by all pages:** ambient light, the halo behind the logo, the paper title and license line, the *Explore* button, the focus ring of the formula field, the active menu item, section rules, the summary bars and page headings.
+- Explore runs only with the button or **Enter**. Leaving the field no longer starts an exploration.
+- The formula field starts empty, so the animation shows; "Start here" is a static gradient pill instead of a blinking one.
 
 ## Changelog — website v2.7 (discoverability & chemical-space summary)
 
