@@ -9,7 +9,8 @@ import pandas as pd
 import streamlit as st
 
 from content import LINKS, INSTITUTION, PUBLICATIONS
-from isomer_info import describe_all
+from isomer_info import describe_all, FUNCTIONAL_GROUPS
+from smilx_chemistry_tools import get_unsaturations
 from smilx_parameters import parse_formula, initial_parameters, SUPPORTED_ELEMENTS
 from smilx_chemical_space import chemical_space_classic, chemical_space_carbenes
 from ui.components import html, img_uri, esc, gap
@@ -96,14 +97,8 @@ def isomer_props(smiles: tuple) -> dict:
     return describe_all(list(smiles))
 
 
-# ── Hero ───────────────────────────────────────────────────────────────────
-# Landing: big logo + credits. With results on screen: one compact line, so the
-# formula field and the results share the first screen (no long jump to scroll).
-_pending = bool(st.session_state.get("go") or st.session_state.get("_run"))
-has_results = bool(st.session_state.get(RESULT_KEY)) or (
-    _pending and parse_formula(st.session_state.get("formula_input", "")).ok)
-if not has_results:
-    html(f"""
+# ── Hero (always the same, before and after exploring) ────────────────────
+html(f"""
 <div class="hero fade">
   <img class="hero-logo" src="{img_uri('assets/logo_smilx.png')}" alt="SmilX" width="340" height="122">
   <div class="credit">
@@ -114,17 +109,9 @@ if not has_results:
   </div>
 </div>
 """)
-else:
-    html(f"""
-<div class="hero-compact">
-  <img src="{img_uri('assets/logo_smilx.png')}" alt="SmilX" width="104" height="37">
-  <p><a href="{LINKS['paper']}" target="_blank" rel="noopener">&ldquo;{esc(PAPER['title'])}&rdquo;</a>
-     · Chem. Sci. 2026 · {esc(INSTITUTION.split(' (')[0])} · GPL v3</p>
-</div>
-""")
 
 # ── Explorer card: formula · mode · Explore ────────────────────────────────
-with st.container(key="explorer-compact" if has_results else "explorer"):
+with st.container(key="explorer"):
     c_in, c_mode, c_btn = st.columns([2.1, 1.55, 0.85], vertical_alignment="bottom", gap="medium")
     with c_in:
         st.text_input("Molecular formula", key="formula_input",
@@ -205,7 +192,10 @@ body { background: #0e111a !important; margin: 0; padding: 0 0 8px;
 #mols2grid .m2g-dropdown .m2g-display { color: #e6e8f0; font-size: 14px; }
 #mols2grid .m2g-dropdown .m2g-display::before { color: #8c94ab; }
 #mols2grid .m2g-dropdown.m2g-sort .m2g-order { background-color: transparent !important; filter: invert(1) brightness(.9); border-color: #4a5470 !important; }
-#mols2grid .m2g-dropdown.m2g-actions .m2g-icon { filter: invert(1) brightness(.9); }
+#mols2grid .m2g-dropdown.m2g-actions { width: 40px !important; }
+#mols2grid .m2g-dropdown.m2g-actions .m2g-icon { filter: none !important; }
+#mols2grid .m2g-dropdown.m2g-actions .m2g-icon svg { fill: #e6e8f0 !important; }
+#mols2grid .m2g-dropdown.m2g-actions:hover .m2g-icon svg { fill: #ffffff !important; }
 #mols2grid select, #mols2grid select option { background: #272e44 !important; color: #e6e8f0 !important; }
 #mols2grid .m2g-searchbar { color: #e6e8f0 !important; background: transparent !important; font-size: 14px; }
 #mols2grid .m2g-searchbar::placeholder { color: #8c94ab; }
@@ -226,11 +216,95 @@ body { background: #0e111a !important; margin: 0; padding: 0 0 8px;
 #mols2grid .m2g-cell .data-img { cursor: zoom-in; }
 #mols2grid .m2g-cell.m2g-phantom { background: transparent !important; border: none !important; box-shadow: none !important; }
 #mols2grid .m2g-callback { display: none !important; }
+/* zoom affordance */
+#mols2grid .m2g-cell .smx-zoom { position: absolute; right: 8px; top: 8px; width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center; color: #2b4fb8; background: #eef2ff; cursor: zoom-in; z-index: 3;
+  opacity: 0; transform: scale(.85); transition: opacity .15s, transform .15s; }
+#mols2grid .m2g-cell:hover .smx-zoom, #mols2grid .m2g-cell.smx-hint .smx-zoom { opacity: 1; transform: none; }
+@media (hover: none) { #mols2grid .m2g-cell .smx-zoom { opacity: 1; transform: none; } }
+#mols2grid .m2g-cell.smx-hint { animation: smxHint 1.8s ease-in-out infinite; }
+#mols2grid .m2g-cell .smx-hint-label { display: none; }
+#mols2grid .m2g-cell.smx-hint .smx-hint-label { display: block; position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%);
+  background: #233a6b; color: #d9e2ff; font: 600 12px 'Outfit', system-ui, sans-serif; padding: 4px 10px; border-radius: 999px;
+  white-space: nowrap; pointer-events: none; z-index: 3; box-shadow: 0 4px 10px rgba(0,0,0,.25); }
+@keyframes smxHint {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(173,198,255,0), 0 0 0 rgba(91,138,245,0); }
+  50% { box-shadow: 0 0 0 3px rgba(173,198,255,.95), 0 0 26px rgba(91,138,245,.65); }
+}
+@media (prefers-reduced-motion: reduce) { #mols2grid .m2g-cell.smx-hint { animation: none; box-shadow: 0 0 0 3px #adc6ff; } }
 #mols2grid .m2g-cb-wrap input[type=checkbox] + .m2g-cb { border-color: #8a93a8; }
 #mols2grid .data-mols2grid-id-display { display: none !important; }
 #mols2grid .data-ID { color: #2b4fb8 !important; font: 600 12px 'IBM Plex Mono', monospace; }
 #mols2grid .data-SMILES { color: #3f4659 !important; font: 500 11.5px 'IBM Plex Mono', monospace; word-break: break-all; }
 """
+
+
+GROUP_SMARTS = dict(FUNCTIONAL_GROUPS)
+
+
+def _summary_html(chk, smiles: list[str], props: dict, res: dict) -> str:
+    """Chemical-space summary under the grid. Every number is counted from the
+    RDKit data of the isomers shown above (no external or estimated values)."""
+    info = [v for v in props.values() if v]
+    n = len(smiles)
+    if not info:
+        return ""
+    groups: dict[str, int] = {}
+    for v in info:
+        for g in v["groups"]:
+            groups[g] = groups.get(g, 0) + 1
+    ring_sizes: dict[int, int] = {}
+    for v in info:
+        for size in set(v["ring_sizes"]):
+            ring_sizes[size] = ring_sizes.get(size, 0) + 1
+    cyclic = sum(1 for v in info if v["rings"])
+    chiral = sum(1 for v in info if v["stereocenters"] or v["stereo_double_bonds"])
+    total_stereo = sum((v["stereoisomers"] or 1) for v in info)
+    first = info[0]
+    pats = []
+    if chk.ok:
+        mf = {e: chk.counts.get(e, 0) for e in SUPPORTED_ELEMENTS}
+        mf["hdi"] = chk.hdi
+        pats = [u for u in get_unsaturations(mf, chk.n_heavy_atoms)
+                if chk.hdi == u.double_bonds + 2 * u.triple_bonds + u.cycles]
+
+    def stat(value, label, tip=""):
+        t = f' class="tip" tabindex="0" data-tip="{esc(tip)}"' if tip else ""
+        return f'<div class="ss-stat"><b>{value}</b><span{t}>{esc(label)}</span></div>'
+
+    stats = "".join([
+        stat(f"{first['mw']:.2f}", "g/mol (all isomers)", "Same molecular formula, so every isomer has the same molar mass."),
+        stat(chk.hdi if chk.ok else "—", "HDI", "Hydrogen deficiency index: rings + π bonds the formula requires."),
+        stat(len(pats), "unsaturation patterns", "Combinations of double bonds, triple bonds and rings that add up to the HDI."),
+        stat(f"{n - cyclic} / {cyclic}", "acyclic / cyclic"),
+        stat(chiral, "with stereo elements", "Isomers with a stereocenter or a stereogenic double bond (RDKit)."),
+        stat(f"{total_stereo:,}", "stereoisomers in total", "Sum of the possible stereoisomers of every constitutional isomer (RDKit enumeration)."),
+    ])
+
+    rows = []
+    for name, count in sorted(groups.items(), key=lambda kv: (-kv[1], kv[0])):
+        pct = 100 * count / n
+        sma = GROUP_SMARTS.get(name)
+        attrs = (f'data-smarts="{esc(sma)}" role="button" tabindex="0" title="Show only these in the grid"'
+                 if sma else 'title="Not searchable by SMARTS"')
+        rows.append(f'<div class="ss-row{" link" if sma else ""}" {attrs}><span class="nm">{esc(name)}</span>'
+                    f'<span class="bar"><i style="width:{pct:.1f}%"></i></span><span class="ct">{count}</span></div>')
+    groups_html = "".join(rows) or '<p class="ss-note">No functional groups: saturated hydrocarbons only.</p>'
+    rings_html = " · ".join(f"{k}-membered <b>{v}</b>" for k, v in sorted(ring_sizes.items())) or "none"
+
+    return f"""
+<section class="ss fade">
+  <div class="ss-head"><h3>Chemical space of {chk.pretty if chk.ok else esc(res['formula'])}</h3>
+    <span class="ss-note">Counted with RDKit from the {n:,} isomers above</span></div>
+  <div class="ss-stats">{stats}</div>
+  <div class="ss-cols">
+    <div><h4>Functional groups <span class="ss-note">click one to filter the grid</span></h4>
+      <div class="ss-groups">{groups_html}</div>
+      <button class="ss-reset" type="button" data-smarts="">Show all isomers</button></div>
+    <div><h4>Rings</h4><p class="ss-rings">{rings_html}</p>
+      <p class="ss-note">Isomers containing at least one ring of each size.</p></div>
+  </div>
+</section>"""
 
 
 def _grid_html(smiles: list[str], props: dict) -> str:
@@ -288,11 +362,30 @@ if res:
   <span class="result-banner"><i>✓</i><span>{len(smiles):,} isomers of {title}</span></span>
   <span class="rb-space"></span>{dl}
 </div>""")
+        # results on screen → the "Start here" cue has done its job
+        run_js("document.body.classList.add('smilx-started'); try { sessionStorage.setItem('smilxStarted', '1'); } catch (e) {}")
         if smiles:
             props = isomer_props(tuple(smiles))
             st.iframe(_grid_html(smiles, props), height="content")
+            html(_summary_html(rchk, smiles, props, res))
         else:
             st.info("No isomers were generated for this formula and mode.")
+
+    run_js("""
+(() => {
+  if (window.__smilxSS) return; window.__smilxSS = true;
+  const act = (el) => {
+    const fr = document.querySelector('.st-key-results iframe');
+    try { fr.contentWindow.smilxSmarts(el.dataset.smarts); } catch (e) { return; }
+    document.querySelectorAll('.ss-row.on').forEach(r => r.classList.remove('on'));
+    if (el.classList.contains('ss-row')) el.classList.add('on');
+    const bar = document.getElementById('smilx-res-bar');
+    if (bar) bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  document.addEventListener('click', (e) => { const el = e.target.closest && e.target.closest('[data-smarts]'); if (el && el.closest('.ss')) act(el); });
+  document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.ss [data-smarts]')) { e.preventDefault(); act(e.target); } });
+})();
+""")
 
     if just_ran:
         # Gentle: scroll only when the results header is below the fold, and then
@@ -301,7 +394,7 @@ if res:
 (() => {
   const go = () => {
     const bar = document.querySelector('#smilx-res-bar');
-    const exp = document.querySelector('.st-key-explorer-compact, .st-key-explorer');
+    const exp = document.querySelector('.st-key-explorer');
     if (!bar || !exp) return false;
     const vh = window.innerHeight, r = bar.getBoundingClientRect();
     if (r.top > 0 && r.bottom < vh * 0.7) return true;              // already in view

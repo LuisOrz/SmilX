@@ -19,7 +19,7 @@ import os
 import streamlit as st
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
-WEB_VERSION = "2.6.1"
+WEB_VERSION = "2.7"
 
 _cache: dict[str, tuple[float, str]] = {}
 

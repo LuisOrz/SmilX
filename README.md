@@ -131,6 +131,14 @@ Gonzalez-Ortiz, L. A.; Noriega, L.; Ortiz-Chi, F.; Vidales-Ayala, G.; Soberanis-
 
 ---
 
+## Changelog — website v2.7 (discoverability & chemical-space summary)
+
+- The header keeps its full size before and after exploring.
+- The total badge uses the same size and type as the *3D with ELAYA* button (40 px, 14 px semibold, 22 px icon).
+- The grid's ⋮ actions menu is visible again: an inverted icon filter had made it dark on dark.
+- **Zoom affordance:** every card shows a magnifier on hover (always shown on touch screens). The first card pulses with a *Click to zoom* label until the user opens a zoom once; this is remembered in the browser.
+- **Chemical space summary under the grid**, counted with RDKit from the isomers shown: molar mass, HDI, unsaturation patterns, acyclic/cyclic, isomers with stereo elements, total stereoisomers, ring sizes, and a functional-group distribution. Clicking a group filters the grid with its SMARTS; *Show all isomers* resets it.
+
 ## Changelog — website v2.6 (alignment pass)
 
 - One 8 px spacing grid, verified by measurement at 1440, 1318, 1024 and 390 px wide:

@@ -615,3 +615,40 @@ body:not(.smilx-started) .st-key-explorer .st-key-formula_input [data-testid="st
     .rb-btn.elaya { padding-left: 8px; }
     .st-key-results { margin-top: -24px !important; }
 }
+
+/* Total badge matches the ELAYA button: 40 px, 14 px/600, 22 px leading icon */
+.res-bar .result-banner { height: 40px; padding: 0 16px 0 9px !important; gap: 8px; font: 600 14px var(--fh) !important; line-height: 1 !important; }
+.res-bar .result-banner i { width: 22px !important; height: 22px !important; font-size: 13px !important; flex: 0 0 22px; }
+.res-bar .result-banner sub { font-size: .72em; line-height: 0; vertical-align: -0.2em; }
+
+/* ── Chemical-space summary (under the grid) ───────────────────── */
+.ss { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--outline-v); }
+.ss-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+.ss h3 { margin: 0 !important; padding: 0 !important; font-size: 1.15rem !important; font-weight: 650 !important; }
+.ss h3 sub { font-size: .7em; }
+.ss h4 { margin: 0 0 12px !important; padding: 0 !important; font-size: .95rem !important; font-weight: 600 !important; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.ss-note { font-size: 12.5px; color: var(--on-3); font-weight: 400; }
+.ss-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px 24px; margin-bottom: 28px; }
+.ss-stat b { display: block; font: 700 1.35rem var(--fh); color: var(--on); font-variant-numeric: tabular-nums; line-height: 1.2; }
+.ss-stat span { font-size: 12.5px; color: var(--on-3); }
+.ss-stat .tip { text-decoration: underline dotted rgba(140,148,171,.7); text-underline-offset: 3px; }
+.ss-cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 32px; }
+.ss-groups { display: grid; gap: 4px; }
+.ss-row { display: grid; grid-template-columns: minmax(120px, 190px) 1fr 40px; gap: 12px; align-items: center; padding: 5px 8px; border-radius: 8px; }
+.ss-row .nm { font-size: 13.5px; color: var(--on-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss-row .bar { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.ss-row .bar i { display: block; height: 100%; border-radius: 4px; background: var(--primary); opacity: .75; }
+.ss-row .ct { font: 600 13px var(--fm); color: var(--on); text-align: right; }
+.ss-row.link { cursor: pointer; transition: background var(--ease); }
+.ss-row.link:hover, .ss-row.link:focus-visible { background: var(--surface); }
+.ss-row.link:hover .bar i { opacity: 1; }
+.ss-row.on { background: var(--primary-c); }
+.ss-row.on .nm, .ss-row.on .ct { color: var(--on-primary-c); }
+.ss-row.on .bar { background: rgba(217,226,255,.15); }
+.ss-reset { margin-top: 12px; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--outline); background: transparent;
+    color: var(--primary); font: 600 13.5px var(--fh); cursor: pointer; }
+.ss-reset:hover { background: var(--primary-08); border-color: var(--primary); }
+.ss-rings { font-size: 14px; color: var(--on-2); margin: 0 0 6px !important; }
+.ss-rings b { color: var(--on); }
+@media (max-width: 900px) { .ss-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ss-cols { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .ss-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ss-row { grid-template-columns: 120px 1fr 32px; } }
